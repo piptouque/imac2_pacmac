@@ -12,40 +12,42 @@ namespace pacmac.random
     public abstract class FiniteDistribution<T> : Distribution<T>
     {
         private T[] _values;
-        protected Probability[] _weights;
+        protected Probability[] _quantileValues;
         public FiniteDistribution(T[] values)
         {
             _values = (T[]) values.Clone();
         }
         public T Distribute(Probability prob)
         {
-            Probability it = prob;
+            /*
+             * see inverse distribution function
+             * or quantive function
+             */
             for (int i=0; i<GetNumber(); ++i)
             {
-                if (it <= GetWeight(i))
+                if (prob > GetQuantileValue(i))
                 {
                     /* right one */
                     return GetValue(i);
                 }
-                it -= GetWeight(i);
             }
-            throw new System.ArgumentException("Nope, something's wrong in weights.");
+            throw new System.ArgumentException("Nope, something's wrong with the quantile function.");
         }
 
 
         protected T GetValue(int index) { return _values[index]; }
-        protected Probability GetWeight(int index) { return _weights[index]; }
+        protected Probability GetQuantileValue(int index) { return _quantileValues[index]; }
         protected int GetNumber() { return _values.GetLength(0); }
     }
 
 
     public class CustomFiniteDistribution<T> : FiniteDistribution<T>
     {
-    CustomFiniteDistribution(T[] values, Probability[] weights)
-    : base(values)
-    {
-        _weights = weights;
-    }
+        CustomFiniteDistribution(T[] values, Probability[] weights)
+        : base(values)
+        {
+            _quantileValues = weights;
+        }
 
     }
 
@@ -59,19 +61,18 @@ namespace pacmac.random
         protected static int GetNumber(int min, int max) => max - min + 1;
     }
 
-
-    public class UniformDistribution<T> : FiniteDistribution<T>
+    public class UniformRangeIntDistribution : FiniteRangeIntDistribution
     {
-        public UniformDistribution(T[] values)
-        : base(values)
+        public UniformRangeIntDistribution(int min, int max)
+        : base(min, max)
         {
-            PopulateWeights();
+
         }
-        private void PopulateWeights()
+        private void Distribute()
         {
             for(int i=0; i<GetNumber(); ++i)
             {
-                _weights[i] = (double) 1 / GetNumber();
+                _quantileValues[i] = (double) (i+1) / GetNumber();
             }
         }
     }
@@ -84,12 +85,12 @@ namespace pacmac.random
         : base(0, 1)
         {
             _p = p;
-            PopulateWeights();
+            PopulateQuantileValues();
         }
-        private void PopulateWeights()
+        private void PopulateQuantileValues()
         {
-            _weights[0] = _p.GetInverseEventProb();
-            _weights[1] = _p;
+            _quantileValues[0] = _p.GetInverseEventProb();
+            _quantileValues[1] = 1.0;
         } 
     }
 
@@ -100,17 +101,22 @@ namespace pacmac.random
         : base(0, n)
         {
             _p = p;
-            PopulateWeights();
+            PopulateQuantileValues();
         }
 
-        private void PopulateWeights()
+        private void PopulateQuantileValues()
         {
-            for(int k=0; k<GetNumber(); ++k)
+            for (int k=0; k<GetNumber() - 1; ++k)
             {
-                _weights[k] = (double)((Double)MathUtil.BinomialCoefficient(k, GetNumber())
+                _quantileValues[k] = (double)((Double)MathUtil.BinomialCoefficient(k, GetNumber())
                 * Math.Pow(_p.GetValue(), k)
                 * Math.Pow(_p.GetInverseEventProb().GetValue(), GetNumber() - k));
+                if (k > 0)
+                {
+                    _quantileValues[k] += _quantileValues[k - 1];
+                }
             }
+            _quantileValues[GetNumber()-1] = 1.0;
         }
 
     }
@@ -130,14 +136,14 @@ namespace pacmac.random
             */
             int j = (int) (_N * p.GetValue());
             _p = new Probability(_N / (double)j);
-            PopulateWeights();
+            PopulateQuantileValues();
         }
 
-        private void PopulateWeights()
+        private void PopulateQuantileValues()
         {
-            for(int k=0; k<GetNumber(); ++k)
+            for (int k=0; k<GetNumber()-1; ++k)
             {
-                _weights[k] = (double)(MathUtil.BinomialCoefficient(
+                _quantileValues[k] = (double)(MathUtil.BinomialCoefficient(
                     (int)(_N * _p.GetValue()),
                     k
                     )
@@ -147,7 +153,54 @@ namespace pacmac.random
                     )
                     / MathUtil.BinomialCoefficient(_N, GetNumber())
                 );
+                if (k > 1)
+                {
+                    _quantileValues[k] += _quantileValues[k - 1];
+                }
             }
+            _quantileValues[GetNumber()-1] = 1.0;
+        }
+    }
+
+    public class MultinomialDistribution : FiniteDistribution<int[]>
+    {
+        private int _n;
+        private Probability[] _ps;
+
+        MultinomialDistribution(Probability[] ps, int n)
+        : base(GeneratePermutations(ps.GetLength(0), n))
+        {
+            _n = n;
+            _ps = ps; 
+        }
+
+        private static int[][] GeneratePermutations(int r, int n)
+        {
+            throw new System.NotImplementedException(); 
+        }
+    }
+
+    public class GaussianDistribution : Distribution<double>
+    {
+        private double _mu;
+        private double _sigma;
+        public GaussianDistribution(double mu, double sigma)
+        {
+            _mu = mu;
+            _sigma = sigma;
+        }
+        public double Distribute(Probability p)
+        {
+            return QuantileFunction(_mu, _sigma, p);
+        }
+
+        private static double QuantileFunction(double mu, double sigma, Probability p)
+        {
+            /*
+             * see:
+             * https://en.wikipedia.org/wiki/Normal_distribution#Quantile_function*
+             */
+            return mu + sigma * MathUtil.ShoreStandardNormalQuantileFunction(p);
         }
     }
 

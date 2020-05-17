@@ -1,4 +1,5 @@
 
+using System;
 using System.Numerics;
 
 namespace pacmac.random
@@ -22,25 +23,23 @@ namespace pacmac.random
             return result;
         }
 
-        public static T[][] ListPermutations<T>(T[] values)
+        public static double ShoreStandardNormalQuantileFunction(Probability p)
         {
-            T[][] perms = new T[values.GetLength(0) * values.GetLength(0)][];
-            for(int i=0; i<values.GetLength(0); ++i)
-            {
-                for(int j=i+1; j<values.GetLength(0); ++j)
-                {
-                perms[i*j] = GetPermutation(values, i, j); 
-                }
-            }
-            return perms;
+            /*
+             * see:
+             *https://en.wikipedia.org/wiki/Normal_distribution#Numerical_approximations_for_the_normal_CDF 
+             */
+            double r, epsilon;
+            bool condition = p.GetValue() >= 0.5;
+            r = condition ? p : 1 - p;
+            epsilon = condition ? 1.0 : 0.0;
+            return epsilon * 5.5556*(1 - Math.Pow(r / (1 - r), 0.1186));
         }
 
-        private static T[] GetPermutation<T>(T[] values, int indexBase, int indexSwap)
+        public static T[][] Permutations<T>(T[] values, int order)
         {
-            T[] perm = (T[])values.Clone();
-            perm[indexBase] = values[indexSwap];
-            perm[indexSwap] = values[indexBase];
-            return perm;
+            /* ??? */
+            throw new System.NotImplementedException();
         }
     }
 }
