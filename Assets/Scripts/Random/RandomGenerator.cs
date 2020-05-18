@@ -9,6 +9,11 @@ namespace pacmac.random
         public RandomGenerator()
         {
             _rng = new Random();
+        } 
+
+        public T Random<T>(Distribution<T> dist)
+        {
+            return dist.Distribute(RandomProb());
         }
 
         public double Gaussian(double mu, double sigma)

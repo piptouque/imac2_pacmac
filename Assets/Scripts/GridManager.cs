@@ -7,16 +7,11 @@ using UnityEditor;
 
 namespace pacmac
 {
-    public enum TileType
-    {
-        EMPTY,
-        WALL,
-        RIM
-    }
     public class GridManager : MonoBehaviour
     {
         private int _level = 0;
         private float _tileSize = 1;
+        private Vector2Int _dim;
 
         public Tilemap _wallMap;
         public Tilemap _rimMap;
@@ -26,7 +21,7 @@ namespace pacmac
         // Start is called before the first frame update
         void Start()
         {
-            StartLevel(_level);
+            StartLevel(_level, new Configuration());
         }
 
         // Update is called once per frame
@@ -35,10 +30,10 @@ namespace pacmac
             
         }
 
-        private void StartLevel(int level)
+        private void StartLevel(int level, Configuration conf)
         {
-            Vector2Int dim = GenerateDimensions(level);
-            TileType[,] grid =  GenerateTiles(level, dim);
+            conf.reset(level);
+            TileType[,] grid = GenerateTiles(conf);
             GenerateGrid(grid);
         }
 
@@ -61,28 +56,22 @@ namespace pacmac
                         switch(grid[x,y])
                         {
                             case TileType.WALL:
-                            _wallMap.SetTile(new Vector3Int(x, y, 0), _wallTiles);
+                                _wallMap.SetTile(new Vector3Int(x, y, 0), _wallTiles);
                             break;
-                            case TileType.EMPTY:
+                                case TileType.EMPTY:
                             default:
-                            break;
+                                break;
                         }    
                     }
                 }
             }
         }
 
-        private TileType[,] GenerateTiles(int level, Vector2Int dim)
+        private TileType[,] GenerateTiles(Configuration conf)
         {
-            return TileGenerator.GenerateTiles(level, dim);
+            Vector2Int dim = Configuration.RandomDimensions();
+            return _tileGen.GenerateTiles(conf, dim);
         }
-
-        private Vector2Int GenerateDimensions(int level)
-        {
-            Vector2Int dim = new Vector2Int(5,5);
-            return dim;
-        }
-
     }
     
 }

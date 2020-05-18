@@ -38,6 +38,7 @@ namespace pacmac.random
         protected T GetValue(int index) { return _values[index]; }
         protected Probability GetQuantileValue(int index) { return _quantileValues[index]; }
         protected int GetNumber() { return _values.GetLength(0); }
+
     }
 
 
