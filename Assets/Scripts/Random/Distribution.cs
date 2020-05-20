@@ -16,6 +16,7 @@ namespace pacmac.random
         public FiniteDistribution(T[] values)
         {
             _values = (T[]) values.Clone();
+            _quantileValues = new Probability[GetNumber()];
         }
         public T Distribute(Probability prob)
         {
@@ -25,13 +26,13 @@ namespace pacmac.random
              */
             for (int i=0; i<GetNumber(); ++i)
             {
-                if (prob > GetQuantileValue(i))
+                if (prob <= GetQuantileValue(i))
                 {
                     /* right one */
                     return GetValue(i);
                 }
             }
-            throw new System.ArgumentException("Nope, something's wrong with the quantile function.");
+            throw new System.ArgumentException("Nope, something's wrong with the quantile function " + "dim: " + GetNumber());
         }
 
 
@@ -55,11 +56,10 @@ namespace pacmac.random
     public abstract class FiniteRangeIntDistribution : FiniteDistribution<int>
     {
         protected FiniteRangeIntDistribution(int min, int max)
-        : base(Enumerable.Range(GetNumber(min, max), min).ToArray())
+        : base(Enumerable.Range(Math.Min(min, max), Math.Abs(max - min) + 1).ToArray())
         {
 
         }
-        protected static int GetNumber(int min, int max) => max - min + 1;
     }
 
     public class UniformRangeIntDistribution : FiniteRangeIntDistribution
@@ -67,9 +67,9 @@ namespace pacmac.random
         public UniformRangeIntDistribution(int min, int max)
         : base(min, max)
         {
-
+            PopulateQuantileValues();
         }
-        private void Distribute()
+        private void PopulateQuantileValues()
         {
             for(int i=0; i<GetNumber(); ++i)
             {
@@ -85,7 +85,7 @@ namespace pacmac.random
         public BernoulliDistribution(Probability p)
         : base(0, 1)
         {
-            _p = p;
+            _p = new Probability(p);
             PopulateQuantileValues();
         }
         private void PopulateQuantileValues()
@@ -98,16 +98,16 @@ namespace pacmac.random
     public class BinomialDistribution : FiniteRangeIntDistribution
     {
         private Probability _p;
-        public BinomialDistribution(Probability p, int n)
-        : base(0, n)
+        public BinomialDistribution(Probability p, int min, int max)
+        : base(min, max)
         {
-            _p = p;
+            _p = new Probability(p);
             PopulateQuantileValues();
         }
 
         private void PopulateQuantileValues()
         {
-            for (int k=0; k<GetNumber() - 1; ++k)
+            for (int k=0; k<GetNumber()-1; ++k)
             {
                 _quantileValues[k] = (double)((Double)MathUtil.BinomialCoefficient(k, GetNumber())
                 * Math.Pow(_p.GetValue(), k)
@@ -127,8 +127,8 @@ namespace pacmac.random
     {
         private int _N;
         private Probability _p;
-        public HypergeometricDistribution(Probability p, int n, int N)
-        : base(0, n)
+        public HypergeometricDistribution(Probability p, int min, int max, int N)
+        : base(min, max)
         {
             _N = N;
             /*
@@ -154,7 +154,7 @@ namespace pacmac.random
                     )
                     / MathUtil.BinomialCoefficient(_N, GetNumber())
                 );
-                if (k > 1)
+                if (k > 0)
                 {
                     _quantileValues[k] += _quantileValues[k - 1];
                 }
@@ -172,7 +172,7 @@ namespace pacmac.random
         : base(GeneratePermutations(ps.GetLength(0), n))
         {
             _n = n;
-            _ps = ps; 
+            _ps = (Probability[]) ps.Clone(); 
         }
 
         private static int[][] GeneratePermutations(int r, int n)

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -11,16 +12,18 @@ namespace pacmac
     {
         private int _level = 0;
         private float _tileSize = 1;
-        private Vector2Int _dim;
 
         public Tilemap _wallMap;
         public Tilemap _rimMap;
         public RuleTile _wallTiles;
         public RuleTile _rimTiles;
 
+        public TileGenerator _tileGen;
+
         // Start is called before the first frame update
         void Start()
         {
+            _tileGen = new TileGenerator();
             StartLevel(_level, new Configuration());
         }
 
@@ -33,44 +36,35 @@ namespace pacmac
         private void StartLevel(int level, Configuration conf)
         {
             conf.reset(level);
-            TileType[,] grid = GenerateTiles(conf);
-            GenerateGrid(grid);
+            TileType[,] grid = _tileGen.GenerateTiles(conf);
+            FillGrid(grid);
         }
-
-        private void GenerateGrid(TileType[,] grid)
+        public void FillGrid(TileType[,] grid)
         {
-            for (int x=-1; x<=grid.GetLength(0); ++x)
+            int dimX = grid.GetLength(0);
+            int dimY = grid.GetLength(1);
+            for (int x=0; x<dimX; ++x)
             {
-                for (int y=-10; y<=grid.GetLength(1); ++y)
+                _rimMap.SetTile(new Vector3Int(x, -1, 0), _rimTiles);
+                _rimMap.SetTile(new Vector3Int(x, dimY, 0), _rimTiles);
+                for (int y=0; y<dimY; ++y)
                 {
-                
-                    bool isRim = x<0
-                    || x>=grid.GetLength(0)
-                    || y<0 || y>=grid.GetLength(1);
-                    if (isRim)
+                    switch(grid[x,y])
                     {
-                        _rimMap.SetTile(new Vector3Int(x, y, 0), _rimTiles);
-                    }
-                    else
-                    {
-                        switch(grid[x,y])
-                        {
-                            case TileType.WALL:
-                                _wallMap.SetTile(new Vector3Int(x, y, 0), _wallTiles);
+                        case TileType.WALL:
+                            _wallMap.SetTile(new Vector3Int(x, y, 0), _wallTiles);
+                        break;
+                            case TileType.EMPTY:
+                        default:
                             break;
-                                case TileType.EMPTY:
-                            default:
-                                break;
-                        }    
-                    }
+                    }    
                 }
             }
-        }
-
-        private TileType[,] GenerateTiles(Configuration conf)
-        {
-            Vector2Int dim = Configuration.RandomDimensions();
-            return _tileGen.GenerateTiles(conf, dim);
+            for (int y=-1; y<=dimY; ++y)
+            {
+                _rimMap.SetTile(new Vector3Int(-1, y, 0), _rimTiles);
+                _rimMap.SetTile(new Vector3Int(dimX, y, 0), _rimTiles);
+            }
         }
     }
     

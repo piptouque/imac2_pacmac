@@ -1,9 +1,7 @@
 
 using System;
+using System.Linq;
 using UnityEngine;
-
-using pacmac.random;
-
 
 namespace pacmac
 {
@@ -17,19 +15,26 @@ namespace pacmac
         public TileGenerator()
         {
         }
-        public TileType[,] GenerateTiles(Configuration conf, Vector2Int dim)
+
+        public TileType[,] GenerateTiles(Configuration conf)
         {
+            Vector2Int dim = conf.GetLevelDimensions();
             TileType[,] grid = new TileType[dim[0], dim[1]];
-            Array.Fill<TileType>(grid, TileType.EMPTY);
+            for (int x=0; x<grid.GetLength(0); ++x)
+            {
+                for (int y=0; y<grid.GetLength(1); ++y)
+                {
+                    grid[x, y] = TileType.WALL;
+                }
+            }
             GeneratePaths(grid, conf);
             /* */
             return grid;
         }
 
-
         private void GeneratePaths(TileType[,] grid, Configuration conf)
         {
-            int numberPaths = conf.RandomPathNumber();
+            int numberPaths = conf.GetNumberPaths();
             var corners = new Vector2Int[numberPaths];
             for(int i=0; i<numberPaths; ++i)
             {
@@ -53,7 +58,7 @@ namespace pacmac
                     {
                         int indexX, indexY;
                         indexX = mirrorX ? x : dimX - 1 - x;
-                        indexX = mirrorY ? y : dimY - 1 - y;
+                        indexY = mirrorY ? y : dimY - 1 - y;
                         grid[x, y] = grid[indexX, indexY];
                     }
                 }
@@ -61,6 +66,8 @@ namespace pacmac
         }
         private void LinkCorners(TileType[,] grid, Vector2Int[] corners, int numberPaths, Configuration conf)
         {
+            int dimX = grid.GetLength(0);
+            int dimY = grid.GetLength(1);
             int numberCorners = corners.GetLength(0);
             /*
              * First pass
@@ -72,59 +79,55 @@ namespace pacmac
                     AddPath(grid, corners[i], corners[i+1]);
                 }
                 /* last two on the border in order to link the four parts */
-                int dimX = grid.GetLength(0);
-                int dimY = grid.GetLength(1);
                 var wayUp = new Vector2Int(conf.RandomX(), dimY / 4);
-                var wayRight = new Vector2Int(dimX / 4, RandomY());
+                var wayRight = new Vector2Int(dimX / 4, conf.RandomY());
                 AddPath(grid, wayUp, corners[0]);
-                AddPath(grid, corners[i], wayRight);
+                AddPath(grid, corners[numberCorners - 1], wayRight);
             }
             for(int i=0; i<numberCorners; ++i)
             {
-                Vector2Int first = corners[RandomPathNumber()-1];
-                Vector2Int second = corners[RandomPathNumber()-1];
-                AddPath(grid, corners[first], corners[second]);
+                Vector2Int first = corners[conf.RandomPathIndex()];
+                Vector2Int second = corners[conf.RandomPathIndex()];
+                AddPath(grid, first, second);
             }
         }
 
         private static void AddPath(TileType[,] grid, Vector2Int corner1, Vector2Int corner2)
         {
-            if(corner1[0] >= corner2[0])
+            if(corner1[0] > corner2[0])
             {
                 AddPath(grid, corner2, corner1);
             }
-            Vector2Int[] third = new Vector2Int(corner1[0], corner2[1]);
+            Vector2Int third = new Vector2Int(corner1[0], corner2[1]);
             /* filling path from 1 to 2, going through third. */
-            fillPath(grid, corner1, third);
-            fillPath(grid, third, corner2);
+            freePath(grid, corner1, third);
+            freePath(grid, third, corner2);
         }
 
-        private static void fillPath(TileType[,] grid, Vector2Int corner1, Vector2Int corner2)
+        private static void freePath(TileType[,] grid, Vector2Int corner1, Vector2Int corner2)
         {
             if(corner1[0] != corner2[0]
               && corner1[1] != corner2[1])
-              {
-                  throw new System.ArgumentException("Only use with either vertical or horizontal lines.");
-              }
-            
-            for(int x=Math.Min(corner1[0], corner2[0]); x<=Math.Max(corner1[0], corner2[0]); ++x)
             {
-                for(int y=Math.Min(corner1[1], corner2[1]); y<=Math.Max(corner1[1], corner2[1]); ++y)
+                  throw new System.ArgumentException("Only use with either vertical or horizontal lines.");
+            }
+            int minX = Math.Min(corner1[0], corner2[0]);
+            int maxX = Math.Max(corner1[0], corner2[0]);
+            int minY = Math.Min(corner1[1], corner2[1]);
+            int maxY = Math.Max(corner1[1], corner2[1]);
+            for(int x=minX; x<=maxX; ++x)
+            {
+                for(int y=minY; y<=maxY; ++y)
                 {
-                    fillCell(grid, x, y);
+                    freeCell(grid, x, y);
                 }
             }
         }
 
-        private static void fillCell(TileType[,] grid, int x, int y)
+        private static void freeCell(TileType[,] grid, int x, int y)
         {
-            grid[x, y] = TileType.WALL;
+            grid[x, y] = TileType.EMPTY;
         }
-        private static int[] GetRangeArray(int length)
-        {
-            return Enumerable.Range(0, length).ToArray();
-        }
-
     }
 
 }

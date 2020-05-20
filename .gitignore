@@ -1,5 +1,7 @@
 
+# Unity rubbish
 Library/
 Logs/
+Temp/
 *.csproj
 *.meta
