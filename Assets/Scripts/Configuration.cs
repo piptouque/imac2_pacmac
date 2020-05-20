@@ -30,13 +30,13 @@ namespace pacmac
         public void reset(int level)
         {
             /* todo: */
-            int maxDim = (int)(Math.Log(level + 1)) + 40;
-            int minDim = 40;
+            int maxDim = (int)(Math.Log(level + 1)) + 20;
+            int minDim = 20;
             _distDim = new BinomialDistribution(_p, minDim, maxDim);
             _p = 0.4;
             _dim = RandomDimensions();
-            int maxPath = (_dim[0] + _dim[1]) / 2;
-            int minPath = Math.Min(_dim[0], _dim[1]) / 2 + 1;
+            int maxPath = (_dim[0] + _dim[1]) / 4;
+            int minPath = Math.Min(_dim[0], _dim[1]) / 4 + 1;
             /* */
             _distNumberPaths = new UniformRangeIntDistribution(minPath, maxPath);
             _numberPaths = RandomNumberPaths();

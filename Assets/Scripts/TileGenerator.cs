@@ -52,13 +52,13 @@ namespace pacmac
             {
                 for (int y=0; y<dimY; ++y)
                 {
-                    bool mirrorX = x >= dimX / 4;
-                    bool mirrorY = y >= dimY / 4;
+                    bool mirrorX = x >= dimX / 2;
+                    bool mirrorY = y >= dimY / 2;
                     if (mirrorX || mirrorY)
                     {
                         int indexX, indexY;
-                        indexX = mirrorX ? x : dimX - 1 - x;
-                        indexY = mirrorY ? y : dimY - 1 - y;
+                        indexX = mirrorX ? dimX - 1 - x : x;
+                        indexY = mirrorY ? dimY - 1 - y : y;
                         grid[x, y] = grid[indexX, indexY];
                     }
                 }
