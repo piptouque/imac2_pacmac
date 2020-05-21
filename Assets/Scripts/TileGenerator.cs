@@ -82,7 +82,7 @@ namespace pacmac
                 var wayUp = new Vector2Int(conf.RandomX(), dimY / 4);
                 var wayRight = new Vector2Int(dimX / 4, conf.RandomY());
                 AddPath(grid, wayUp, corners[0]);
-                AddPath(grid, corners[numberCorners - 1], wayRight);
+                AddPath(grid, wayRight, wayUp);
             }
             for(int i=0; i<numberCorners; ++i)
             {
