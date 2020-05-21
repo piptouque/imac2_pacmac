@@ -74,15 +74,19 @@ namespace pacmac
              * making sure every corner is linked
              */
             {
-                for(int i=0; i<numberCorners - 1; ++i)
+                for (int i=0; i<numberCorners - 1; ++i)
                 {
                     AddPath(grid, corners[i], corners[i+1]);
                 }
                 /* last two on the border in order to link the four parts */
                 var wayUp = new Vector2Int(conf.RandomX(), dimY / 4);
                 var wayRight = new Vector2Int(dimX / 4, conf.RandomY());
-                AddPath(grid, wayUp, corners[0]);
                 AddPath(grid, wayRight, wayUp);
+                if (numberCorners > 1)
+                {
+                    AddPath(grid, wayUp, corners[0]);
+                    AddPath(grid, wayRight, corners[numberCorners - 1]);
+                }
             }
             for(int i=0; i<numberCorners; ++i)
             {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEditor;
+using Cinemachine;
 
 
 namespace pacmac
@@ -20,6 +21,7 @@ namespace pacmac
 
         public TileGenerator _tileGen;
         public GameObject _pacman;
+        public CinemachineVirtualCamera _cam; 
 
         // Start is called before the first frame update
         void Start()
@@ -41,6 +43,19 @@ namespace pacmac
             List<Vector2Int> freeTiles = FindFreeTiles(grid);
             FillGrid(grid);
             SpawnPlayer(freeTiles, conf);
+            CentreCamera(grid);
+        }
+        private void CentreCamera(TileType[,] grid)
+        {
+            if (!_cam)
+            {
+                return;
+            }
+            int dimX = grid.GetLength(0);
+            int dimY = grid.GetLength(1);
+            Vector3 centre = new Vector3(dimX / 2, dimY / 2, -1.0f);
+            _cam.transform.position = centre;
+            _cam.m_Lens.OrthographicSize = System.Math.Max(dimX, dimY) / 2 + 2;
         }
 
         private List<Vector2Int> FindFreeTiles(TileType[,] grid)
