@@ -64,6 +64,7 @@ namespace pacmac
                 }
             }
         }
+
         private void LinkCorners(TileType[,] grid, Vector2Int[] corners, int numberPaths, Configuration conf)
         {
             int dimX = grid.GetLength(0);
@@ -76,7 +77,7 @@ namespace pacmac
             {
                 for (int i=0; i<numberCorners - 1; ++i)
                 {
-                    AddPath(grid, corners[i], corners[i+1]);
+                    AddPath(grid, corners[i], corners[i + 1]);
                 }
                 /* last two on the border in order to link the four parts */
                 var wayUp = new Vector2Int(conf.RandomX(), dimY / 4);

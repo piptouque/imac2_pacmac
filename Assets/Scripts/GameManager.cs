@@ -13,6 +13,9 @@ namespace pacmac
     {
         private int _level = 0;
         private float _tileSize = 1;
+        private Configuration _conf;
+        private GameObject _pacman;
+        private GameObject[] _pellets;
 
         public Tilemap _wallMap;
         public Tilemap _rimMap;
@@ -21,46 +24,83 @@ namespace pacmac
         public CinemachineVirtualCamera _cam; 
 
         public TileGenerator _tileGen;
-        public GameObject _pacman;
-        public GameObject _pacdot;
-        public GameObject _superpellet;
-        public GameObject _powerpellet;
+        public GameObject _pacmanBase;
+        public GameObject _pacdotBase;
+        public GameObject _superpelletBase;
+        public GameObject _powerpelletBase;
+        /* UI */
+        public GameObject  _scoreCount;
+        public GameObject  _levelCount;
 
         // Start is called before the first frame update
         void Start()
         {
-            _pacman.SetActive(false);
-            _pacdot.SetActive(false);
-            _superpellet.SetActive(false);
-            _powerpellet.SetActive(false);
+            _pacmanBase.SetActive(false);
+            _pacdotBase.SetActive(false);
+            _superpelletBase.SetActive(false);
+            _powerpelletBase.SetActive(false);
             /* */
             _tileGen = new TileGenerator();
-            StartLevel(_level, new Configuration());
+            _conf = new Configuration();
+
+            /* */
+            SpawnPlayer();
+
+            /* */
+            ResetLevel(_level, _conf);
         }
 
-        // Update is called once per frame
+        void FixedUpdate()
+        {
+            DisplayScore(); 
+            DisplayLevel();
+        }
+
         void Update()
         {
-            
+            if(IsLevelFinished())
+            {
+                ResetLevel(++_level, _conf);
+            }
         }
 
-        private void StartLevel(int level, Configuration conf)
+        private bool IsLevelFinished()
         {
-            conf.reset(level);
-            TileType[,] grid = _tileGen.GenerateTiles(conf);
-            List<Vector2Int> freeTiles = FindFreeTiles(grid);
-            FillGrid(grid);
-            SpawnPlayer(freeTiles, conf);
-            SpawnPellets(freeTiles, conf);
-            CentreCamera(grid);
+            return _pellets.GetLength(0)== _pacman.GetComponent<PacmacBehaviour>().GetPalletEatenCount();
         }
-        private void CentreCamera(TileType[,] grid)
+
+        private void DisplayScore()
         {
+            int score = _pacman.GetComponent<PacmacBehaviour>().GetScore();
+            _scoreCount.GetComponent<TMPro.TMP_Text>().text = System.Convert.ToString(score);
+        }
+        private void DisplayLevel()
+        {
+            _levelCount.GetComponent<TMPro.TMP_Text>().text = System.Convert.ToString(_level);
+        }
+
+        private void ResetLevel(int level, Configuration conf)
+        {
+            conf.Reset(level);
+
+            TileType[,] grid = _tileGen.GenerateTiles(conf);
             int dimX = grid.GetLength(0);
             int dimY = grid.GetLength(1);
+            Vector2Int dim = new Vector2Int(dimX, dimY);
+            List<Vector2Int> freeTiles = FindFreeTiles(grid);
+
+            ResetGrid(grid);
+            ResetPlayer(freeTiles, conf);
+            ResetPellets(freeTiles, conf);
+            CentreCamera(dim);
+        }
+        private void CentreCamera(Vector2Int dim)
+        {
+            int dimX = dim[0];
+            int dimY = dim[1];
             Vector3 centre = new Vector3(dimX / 2, dimY / 2, -1.0f);
             _cam.transform.position = centre;
-            _cam.m_Lens.OrthographicSize = System.Math.Max(dimX, dimY) / 2 + 2;
+            _cam.m_Lens.OrthographicSize = System.Math.Max(dimX, dimY) / 2 + 4;
         }
 
         private List<Vector2Int> FindFreeTiles(TileType[,] grid)
@@ -80,7 +120,7 @@ namespace pacmac
             return freeTiles;
         }
 
-        private void SpawnPlayer(List<Vector2Int> freeTiles, Configuration conf)
+        private void ResetPlayer(List<Vector2Int> freeTiles, Configuration conf)
         {
             /* find a random empty tile ? */
             /* nope, first one, whatever. */
@@ -89,45 +129,68 @@ namespace pacmac
                 throw new System.ArgumentException("Nope, not happening.");
             }
             Vector2Int pos = freeTiles[0];
-            SpawnGameObject(_pacman, pos);
+            var pos3D = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0.0f);
+            _pacman.GetComponent<PacmacBehaviour>().Reset(pos3D);
         } 
 
+        private void SpawnPlayer()
+        {
+            _pacman = SpawnGameObject(_pacmanBase, Vector2Int.zero);
+        }
 
-        private void SpawnPellets(List<Vector2Int> freeTiles, Configuration conf)
+
+        private void ResetPellets(List<Vector2Int> freeTiles, Configuration conf)
         {
             /*
              * a pacdot on all tiles,
              * a super whatever if roll sucessful
              */
-             foreach(var tile in freeTiles)
-             {
+            if(_pellets != null)
+            {
+                foreach(var pellet in _pellets)
+                {
+                    if(pellet != null)
+                    {
+                        pellet.GetComponent<PelletBehaviour>().Reset();
+                    }
+                }
+            }
+            int i = 0;
+            _pellets = new GameObject[freeTiles.Count];
+            foreach(var tile in freeTiles)
+            {
                 GameObject pellet;
                 switch(conf.RandomPellet())
                 {
                     case Pellet.SUPER:
-                        pellet =_superpellet;
+                        pellet = _superpelletBase;
                         break;
                     case Pellet.POWER:
-                        pellet =_powerpellet;
+                        pellet = _powerpelletBase;
                         break;
                     case Pellet.DOT: default:
-                        pellet = _pacdot;
+                        pellet = _pacdotBase;
                         break;
                 }
-                SpawnGameObject(pellet, tile);
-             }
+                _pellets[i++] = SpawnGameObject(pellet, tile);
+            }
         }
         
-        private void SpawnGameObject(GameObject obj, Vector2Int pos)
+        private GameObject SpawnGameObject(GameObject obj, Vector2Int pos)
         {
             // obj.SetActive(false);
-            Vector3 pos3D = new Vector3((float)pos[0] + 0.5f, (float)pos[1] + 0.5f, 0);
+            Vector3 pos3D = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
             var objCopy = (GameObject) Object.Instantiate(obj, pos3D, Quaternion.identity);
             objCopy.SetActive(true);
+            return objCopy;
         }
 
-        private void FillGrid(TileType[,] grid)
+        private void ResetGrid(TileType[,] grid)
         {
+            /* */
+            _wallMap.ClearAllTiles();
+            _rimMap.ClearAllTiles();
+            /* */
             int dimX = grid.GetLength(0);
             int dimY = grid.GetLength(1);
             for (int x=0; x<dimX; ++x)

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PacmacMove : MonoBehaviour
+public class PacmacBehaviour : MonoBehaviour
 {
     public float _speed = 0.4f;
     private int _score = 0;
+    private int _pelletEatenCount = 0;
 
     private Vector2 _dest = Vector2.zero;
 
@@ -13,6 +14,18 @@ public class PacmacMove : MonoBehaviour
     public int GetScore()
     {
         return _score;
+    }
+
+    public int GetPalletEatenCount()
+    {
+        return _pelletEatenCount;
+    }
+
+    public void Reset(Vector3 pos3D)
+    {
+        _pelletEatenCount = 0;
+        transform.position = pos3D;
+        _dest = transform.position;
     }
 
 
@@ -24,6 +37,7 @@ public class PacmacMove : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log("Oui");
         if (other.gameObject.CompareTag("Pellet"))
         {
             EatPellet(other.gameObject);
@@ -67,13 +81,13 @@ public class PacmacMove : MonoBehaviour
     {
         Vector2 pos = transform.position;
         RaycastHit2D ray = Physics2D.Linecast(pos + dir, pos);
-        Debug.Log(ray.collider);
         bool hit = (ray.collider != GetComponent<Collider2D>());
         return hit ? ray.collider.isTrigger : true;
     }
     private void EatPellet(GameObject pellet)
     {
-        _score += pellet.GetComponent<PelletBehaviour>().GetEaten();
+        int added = pellet.GetComponent<PelletBehaviour>().GetEaten();
+        _score = _score + added;
+        ++_pelletEatenCount;
     }
-
 }

@@ -30,7 +30,7 @@ namespace pacmac
             _gen = new RandomGenerator();
         }
 
-        public void reset(int level)
+        public void Reset(int level)
         {
             /* todo: */
             int maxDim = (int)(Math.Log(level + 1)) + 20;
