@@ -80,8 +80,8 @@ namespace pacmac
                     AddPath(grid, corners[i], corners[i + 1]);
                 }
                 /* last two on the border in order to link the four parts */
-                var wayUp = new Vector2Int(conf.RandomX(), dimY / 4);
-                var wayRight = new Vector2Int(dimX / 4, conf.RandomY());
+                var wayUp = new Vector2Int(conf.RandomX(), dimY / 2 + 1);
+                var wayRight = new Vector2Int(dimX / 2 + 1, conf.RandomY());
                 AddPath(grid, wayRight, wayUp);
                 if (numberCorners > 1)
                 {

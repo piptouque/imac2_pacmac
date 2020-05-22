@@ -66,7 +66,7 @@ namespace pacmac
 
         private bool IsLevelFinished()
         {
-            return _pellets.GetLength(0)== _pacman.GetComponent<PacmacBehaviour>().GetPalletEatenCount();
+            return _pellets.GetLength(0) == _pacman.GetComponent<PacmacBehaviour>().GetPelletEatenCount();
         }
 
         private void DisplayScore()
@@ -98,7 +98,7 @@ namespace pacmac
         {
             int dimX = dim[0];
             int dimY = dim[1];
-            Vector3 centre = new Vector3(dimX / 2, dimY / 2, -1.0f);
+            Vector3 centre = new Vector3(dimX / 2, (dimY + 1)/ 2 , -1.0f);
             _cam.transform.position = centre;
             _cam.m_Lens.OrthographicSize = System.Math.Max(dimX, dimY) / 2 + 4;
         }

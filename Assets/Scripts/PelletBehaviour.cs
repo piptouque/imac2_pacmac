@@ -2,19 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PelletBehaviour : MonoBehaviour
+
+namespace pacmac
 {
-
-    public int _score = 10;
-
-    public int GetEaten()
+    public class PelletBehaviour : MonoBehaviour
     {
-        Destroy(this.gameObject);
-        return _score;
+
+        public int _score = 10;
+        public Pellet _type;
+        public int GetEaten()
+        {
+            Destroy(this.gameObject);
+            return _score;
+        }
+
+        public Pellet GetPelletType()
+        {
+            return _type;
+        }
+
+        public void Reset()
+        {
+            Destroy(this.gameObject);
+        }
     }
 
-    public void Reset()
-    {
-        Destroy(this.gameObject);
-    }
 }
