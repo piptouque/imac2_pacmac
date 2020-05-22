@@ -18,14 +18,22 @@ namespace pacmac
         public Tilemap _rimMap;
         public RuleTile _wallTiles;
         public RuleTile _rimTiles;
+        public CinemachineVirtualCamera _cam; 
 
         public TileGenerator _tileGen;
         public GameObject _pacman;
-        public CinemachineVirtualCamera _cam; 
+        public GameObject _pacdot;
+        public GameObject _superpellet;
+        public GameObject _powerpellet;
 
         // Start is called before the first frame update
         void Start()
         {
+            _pacman.SetActive(false);
+            _pacdot.SetActive(false);
+            _superpellet.SetActive(false);
+            _powerpellet.SetActive(false);
+            /* */
             _tileGen = new TileGenerator();
             StartLevel(_level, new Configuration());
         }
@@ -43,14 +51,11 @@ namespace pacmac
             List<Vector2Int> freeTiles = FindFreeTiles(grid);
             FillGrid(grid);
             SpawnPlayer(freeTiles, conf);
+            SpawnPellets(freeTiles, conf);
             CentreCamera(grid);
         }
         private void CentreCamera(TileType[,] grid)
         {
-            if (!_cam)
-            {
-                return;
-            }
             int dimX = grid.GetLength(0);
             int dimY = grid.GetLength(1);
             Vector3 centre = new Vector3(dimX / 2, dimY / 2, -1.0f);
@@ -84,11 +89,43 @@ namespace pacmac
                 throw new System.ArgumentException("Nope, not happening.");
             }
             Vector2Int pos = freeTiles[0];
-            Vector3 pos3D = new Vector3((float)pos[0] + 0.5f, (float)pos[1] + 0.5f, 0);
-            var pacmanCopy = (GameObject) Object.Instantiate(_pacman, pos3D, Quaternion.identity);
-            pacmanCopy.SetActive(true);
-            _pacman.SetActive(false);
+            SpawnGameObject(_pacman, pos);
         } 
+
+
+        private void SpawnPellets(List<Vector2Int> freeTiles, Configuration conf)
+        {
+            /*
+             * a pacdot on all tiles,
+             * a super whatever if roll sucessful
+             */
+             foreach(var tile in freeTiles)
+             {
+                GameObject pellet;
+                switch(conf.RandomPellet())
+                {
+                    case Pellet.SUPER:
+                        pellet =_superpellet;
+                        break;
+                    case Pellet.POWER:
+                        pellet =_powerpellet;
+                        break;
+                    case Pellet.DOT: default:
+                        pellet = _pacdot;
+                        break;
+                }
+                SpawnGameObject(pellet, tile);
+             }
+        }
+        
+        private void SpawnGameObject(GameObject obj, Vector2Int pos)
+        {
+            // obj.SetActive(false);
+            Vector3 pos3D = new Vector3((float)pos[0] + 0.5f, (float)pos[1] + 0.5f, 0);
+            var objCopy = (GameObject) Object.Instantiate(obj, pos3D, Quaternion.identity);
+            objCopy.SetActive(true);
+        }
+
         private void FillGrid(TileType[,] grid)
         {
             int dimX = grid.GetLength(0);

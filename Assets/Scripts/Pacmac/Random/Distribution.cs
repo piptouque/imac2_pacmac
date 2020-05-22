@@ -45,10 +45,22 @@ namespace pacmac.random
 
     public class CustomFiniteDistribution<T> : FiniteDistribution<T>
     {
-        CustomFiniteDistribution(T[] values, Probability[] weights)
+        public CustomFiniteDistribution(T[] values, Probability[] ps)
         : base(values)
         {
-            _quantileValues = weights;
+            PopulateQuantileValues(ps);
+        }
+
+        private void PopulateQuantileValues(Probability[] ps)
+        {
+            for (int i=0; i<GetNumber(); ++i)
+            {
+                _quantileValues[i] = ps[i];
+                if(i > 0)
+                {
+                    _quantileValues[i] += _quantileValues[i - 1];
+                }
+            }
         }
 
     }
@@ -79,11 +91,11 @@ namespace pacmac.random
     }
 
 
-    public class BernoulliDistribution : FiniteRangeIntDistribution 
+    public class BernoulliDistribution : FiniteDistribution<bool>
     {
         private Probability _p;
         public BernoulliDistribution(Probability p)
-        : base(0, 1)
+        : base(new bool[] {false, true})
         {
             _p = new Probability(p);
             PopulateQuantileValues();
@@ -131,12 +143,16 @@ namespace pacmac.random
         : base(min, max)
         {
             _N = N;
+            if(N < min - max + 1)
+            {
+                throw new System.ArgumentOutOfRangeException("Nope, RTFM.");
+            }
             /*
             * we have to have N*p an integer
             * so we may have to tweak p a bit
             */
             int j = (int) (_N * p.GetValue());
-            _p = new Probability(_N / (double)j);
+            _p = new Probability((double) j / _N);
             PopulateQuantileValues();
         }
 

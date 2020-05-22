@@ -5,13 +5,31 @@ using UnityEngine;
 public class PacmacMove : MonoBehaviour
 {
     public float _speed = 0.4f;
+    private int _score = 0;
 
     private Vector2 _dest = Vector2.zero;
-    // Start is called before the first frame update
+
+
+    public int GetScore()
+    {
+        return _score;
+    }
+
+
     void Start()
     {
         _dest = transform.position;
     }
+
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("Pellet"))
+        {
+            EatPellet(other.gameObject);
+        }
+    }
+
 
     void FixedUpdate()
     {
@@ -48,7 +66,14 @@ public class PacmacMove : MonoBehaviour
     private bool IsDirectionValid(Vector2 dir)
     {
         Vector2 pos = transform.position;
-        RaycastHit2D hit = Physics2D.Linecast(pos + dir, pos);
-        return (hit.collider == GetComponent<Collider2D>());
+        RaycastHit2D ray = Physics2D.Linecast(pos + dir, pos);
+        Debug.Log(ray.collider);
+        bool hit = (ray.collider != GetComponent<Collider2D>());
+        return hit ? ray.collider.isTrigger : true;
     }
+    private void EatPellet(GameObject pellet)
+    {
+        _score += pellet.GetComponent<PelletBehaviour>().GetEaten();
+    }
+
 }

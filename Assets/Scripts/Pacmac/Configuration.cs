@@ -10,17 +10,20 @@ namespace pacmac
     { 
         /* Random Number Generator */
         private RandomGenerator _gen; 
-        /* distributions for GridManager */
+        /* distributions for .... */
         private FiniteDistribution<int> _distDim; // Dimension of the grid
+        private FiniteDistribution<Pellet> _distPellets;
+        private Pellet[] _valuesPellet = PelletExtension.PelletsList();
         /* distributions for TileGenerator */
         private FiniteDistribution<int> _distNumberPaths, _distPathIndex;
         private FiniteDistribution<int>[] _distCoods;
+
         /* STORED VALUES */
         private Vector2Int _dim;
         private int _numberPaths;
         /* CONFIG VALUES */
-        private double _p;
-
+        private double _pDim = 0.4;
+        private Probability[] _psPellet = new Probability[] { 0.99, 0.008, 0.002 };
 
         public Configuration()
         {
@@ -32,11 +35,15 @@ namespace pacmac
             /* todo: */
             int maxDim = (int)(Math.Log(level + 1)) + 20;
             int minDim = 20;
-            _distDim = new BinomialDistribution(_p, minDim, maxDim);
-            _p = 0.4;
+            _distDim = new BinomialDistribution(_pDim, minDim, maxDim);
             _dim = RandomDimensions();
             int maxPath = (_dim[0] + _dim[1]) / 4;
             int minPath = Math.Min(_dim[0], _dim[1]) / 4 + 1;
+            /* */
+            _distPellets =  new CustomFiniteDistribution<Pellet>(
+              _valuesPellet,
+              _psPellet
+              );
             /* */
             _distNumberPaths = new UniformRangeIntDistribution(minPath, maxPath);
             _numberPaths = RandomNumberPaths();
@@ -80,6 +87,11 @@ namespace pacmac
         public int RandomPathIndex()
         {
             return _gen.Random<int>(_distPathIndex); 
+        }
+
+        public Pellet RandomPellet()
+        {
+            return _gen.Random<Pellet>(_distPellets);
         }
     }
 
