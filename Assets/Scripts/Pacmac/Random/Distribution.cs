@@ -217,7 +217,7 @@ namespace pacmac.random
              * see:
              * https://en.wikipedia.org/wiki/Normal_distribution#Quantile_function*
              */
-            return mu + sigma * MathUtil.ShoreStandardNormalQuantileFunction(p);
+            return mu + sigma * MathUtil.ShoreStandardNormalQuantileFunction<double>(p);
         }
     }
 

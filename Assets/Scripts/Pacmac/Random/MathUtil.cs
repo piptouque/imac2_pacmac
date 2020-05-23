@@ -23,7 +23,8 @@ namespace pacmac.random
             return result;
         }
 
-        public static double ShoreStandardNormalQuantileFunction(Probability p)
+        public static FloatType ShoreStandardNormalQuantileFunction<FloatType>(Probability p)
+            where FloatType : unmanaged
         {
             /*
              * see:
@@ -33,7 +34,7 @@ namespace pacmac.random
             bool condition = p.GetValue() >= 0.5;
             r = condition ? p : 1 - p;
             epsilon = condition ? 1.0 : 0.0;
-            return epsilon * 5.5556*(1 - Math.Pow(r / (1 - r), 0.1186));
+            return (FloatType)(object)(epsilon * 5.5556*(1 - Math.Pow(r / (1 - r), 0.1186)));
         }
 
         public static T[][] Permutations<T>(T[] values, int order)

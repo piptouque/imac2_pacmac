@@ -7,15 +7,10 @@ namespace pacmac
     public abstract class CharacterBehaviour : MonoBehaviour
     {
         public float _speedBase = 0.4f;
-        protected Vector2 _dest = Vector2.zero;
+        protected Vector2 _dest;
 
-        void Start()
-        {
-            _dest = transform.position;
-        }
         void FixedUpdate()
         {
-            
             if ((Vector2) transform.position != _dest)
             {
                 /* input if moving */
@@ -24,7 +19,7 @@ namespace pacmac
             }
             else
             {
-                ChooseDest();
+                _dest = ChooseDest();
             }
             Vector2Int dir = new Vector2Int((int)(_dest.x - transform.position.x), (int)(_dest.y - transform.position.y));
             GetComponent<Animator>().SetInteger("DirX", dir.x);
@@ -32,8 +27,12 @@ namespace pacmac
         }
         abstract protected void OnTriggerEnter2D(Collider2D other);
 
-        abstract protected void ChooseDest();
-        abstract public void Reset(Vector3 pos3D);
+        abstract protected Vector2 ChooseDest();
+        virtual public void Reset(Vector3 pos3D, Configuration conf)
+        {
+            transform.position = pos3D;
+            _dest = (Vector2) transform.position;
+        }
         abstract protected float GetSpeed();
 
         public float GetSpeedBase()

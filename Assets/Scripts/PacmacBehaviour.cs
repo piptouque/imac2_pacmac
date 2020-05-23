@@ -5,107 +5,6 @@ using UnityEngine;
 namespace pacmac
 {
 
-    enum PacmacStateType { NORMAL, SUPER, POWER }
-    class PacmacState
-    {
-
-        private float _stateStartTime;
-
-        private PacmacStateType _type;
-
-        public PacmacState()
-        {
-            Reset();
-        }
-
-        public float GetSpeed(PacmacBehaviour pacmac)
-        {
-            float speed;
-            switch(_type)
-            {
-                case PacmacStateType.SUPER:
-                    speed = pacmac.GetSpeedBase() * 2;
-                    break;
-                case PacmacStateType.NORMAL:
-                case PacmacStateType.POWER:
-                default:
-                    speed = pacmac.GetSpeedBase();
-                    break;
-            }
-            return speed;
-        }
-
-        public void EatPellet(PacmacBehaviour pacmac, GameObject pellet)
-        {
-            int added = pellet.GetComponent<PelletBehaviour>().GetEaten();
-            pacmac.SetScore(pacmac.GetScore() + added);
-            pacmac.SetPelletEatenCount(pacmac.GetPelletEatenCount() + 1);
-            SetState(pellet);
-        }
-
-        public void FightGhost(PacmacBehaviour pacmac, GameObject ghost)
-        {
-            switch (_type)
-            {
-                case PacmacStateType.POWER: 
-                    EatGhost(pacmac, ghost);
-                    break;
-                case PacmacStateType.NORMAL:
-                case PacmacStateType.SUPER:
-                default:
-                    GetPowerOwned(pacmac, ghost);
-                    break;
-            }
-        }
-
-        public void Update(PacmacBehaviour pacmac)
-        {
-            if (_type != PacmacStateType.NORMAL)
-            {
-                float elapsed = Time.time - _stateStartTime;
-                if (elapsed > pacmac.GetPowerTime())
-                {
-                    Reset();
-                }
-            }
-        }
-        public void Reset()
-        {
-            _type = PacmacStateType.NORMAL;
-        }
-
-        private void EatGhost(PacmacBehaviour pacmac, GameObject pellet)
-        {
-        }
-
-        private void GetPowerOwned(PacmacBehaviour pacmac, GameObject ghost)
-        {
-
-        }
-
-        private void SetState(GameObject pellet)
-        {
-            Pellet pelletType = pellet.GetComponent<PelletBehaviour>().GetPelletType();
-            switch(pelletType)
-            {
-                case Pellet.SUPER:
-                    SetType(PacmacStateType.SUPER);
-                    break;
-                case Pellet.POWER:
-                    SetType(PacmacStateType.POWER);
-                    break;
-                case Pellet.DOT:
-                default:
-                    break;
-            }
-        }
-
-        private void SetType(PacmacStateType type)
-        {
-            _type = type;
-            _stateStartTime = Time.time;
-        }
-    }
     public class PacmacBehaviour : CharacterBehaviour 
     {
         private PacmacState _state = new PacmacState();
@@ -116,6 +15,11 @@ namespace pacmac
         void Update()
         {
             _state.Update(this);
+        }
+
+        public bool HeDed()
+        {
+            return _state.HeDed();
         }
 
         public int GetScore()
@@ -149,16 +53,12 @@ namespace pacmac
             return _pelletEatenCount;
         }
 
-        override public void Reset(Vector3 pos3D)
+        override public void Reset(Vector3 pos3D, Configuration conf)
         {
+            base.Reset(pos3D, conf);
             _pelletEatenCount = 0;
-            transform.position = pos3D;
-            _dest = transform.position;
             _state.Reset();
         }
-
-
-
 
         override protected void OnTriggerEnter2D(Collider2D other)
         {
@@ -166,31 +66,33 @@ namespace pacmac
             {
                 EatPellet(other.gameObject);
             }
-            else if (other.gameObject.CompareTag("ghost"))
+            else if (other.gameObject.CompareTag("Ghost"))
             {
                 FightGhost(other.gameObject);
             }
         }
 
 
-        override protected void ChooseDest()
+        override protected Vector2 ChooseDest()
         {
-                if(Input.GetKey(KeyCode.UpArrow) && IsDirectionValid(Vector2.up))
-                {
-                    _dest = (Vector2) transform.position + Vector2.up;
-                }
-                else if(Input.GetKey(KeyCode.RightArrow) && IsDirectionValid(Vector2.right))
-                {
-                    _dest = (Vector2) transform.position + Vector2.right;
-                }
-                else if(Input.GetKey(KeyCode.DownArrow) && IsDirectionValid(- Vector2.up))
-                {
-                    _dest = (Vector2) transform.position - Vector2.up;
-                }
-                else if(Input.GetKey(KeyCode.LeftArrow) && IsDirectionValid(- Vector2.right))
-                {
-                    _dest = (Vector2) transform.position - Vector2.right;
-                }
+            Vector2 dest = (Vector2) transform.position;
+            if(Input.GetKey(KeyCode.UpArrow) && IsDirectionValid(Vector2.up))
+            {
+                dest += Vector2.up;
+            }
+            else if(Input.GetKey(KeyCode.RightArrow) && IsDirectionValid(Vector2.right))
+            {
+                dest += Vector2.right;
+            }
+            else if(Input.GetKey(KeyCode.DownArrow) && IsDirectionValid(- Vector2.up))
+            {
+                dest -= Vector2.up;
+            }
+            else if(Input.GetKey(KeyCode.LeftArrow) && IsDirectionValid(- Vector2.right))
+            {
+                dest -= Vector2.right;
+            }
+            return dest;
         }
 
         private void EatPellet(GameObject pellet)
@@ -201,6 +103,133 @@ namespace pacmac
         private void FightGhost(GameObject ghost)
         {
             _state.FightGhost(this, ghost);
+        }
+    }
+
+    enum PacmacStateType { NORMAL, SUPER, POWER, DED }
+    class PacmacState
+    {
+
+        private float _stateStartTime;
+
+        private PacmacStateType _type;
+
+        public PacmacState()
+        {
+            Reset();
+        }
+
+        public float GetSpeed(PacmacBehaviour pacmac)
+        {
+            float speed;
+            switch(_type)
+            {
+                case PacmacStateType.SUPER:
+                    speed = pacmac.GetSpeedBase() * 2;
+                    break;
+                case PacmacStateType.NORMAL:
+                case PacmacStateType.POWER:
+                default:
+                    speed = pacmac.GetSpeedBase();
+                    break;
+            }
+            return speed;
+        }
+        private void AddScore(PacmacBehaviour pacmac, int addedBase)
+        {
+            int added;
+            switch(_type)
+            {
+                case PacmacStateType.SUPER:
+                    added = addedBase * 2;
+                    break;
+                case PacmacStateType.NORMAL:
+                case PacmacStateType.POWER:
+                default:
+                    added = addedBase;
+                    break;
+            }
+            pacmac.SetScore(added + pacmac.GetScore());
+        }
+
+        public void EatPellet(PacmacBehaviour pacmac, GameObject pellet)
+        {
+            pacmac.SetPelletEatenCount(pacmac.GetPelletEatenCount() + 1);
+            SetState(pellet);
+            int added = pellet.GetComponent<PelletBehaviour>().GetEaten();
+            AddScore(pacmac, + added);
+        }
+
+        public void FightGhost(PacmacBehaviour pacmac, GameObject ghost)
+        {
+            switch (_type)
+            {
+                case PacmacStateType.POWER: 
+                    EatGhost(pacmac, ghost);
+                    break;
+                case PacmacStateType.NORMAL:
+                case PacmacStateType.SUPER:
+                default:
+                    GetPowerOwned(pacmac, ghost);
+                    break;
+            }
+        }
+
+
+        public bool HeDed()
+        {
+            return _type == PacmacStateType.DED;
+        }
+
+        public void Update(PacmacBehaviour pacmac)
+        {
+            if (_type != PacmacStateType.NORMAL)
+            {
+                float elapsed = Time.time - _stateStartTime;
+                if (elapsed > pacmac.GetPowerTime())
+                {
+                    Reset();
+                }
+            }
+        }
+        public void Reset()
+        {
+            _type = PacmacStateType.NORMAL;
+        }
+
+        private void EatGhost(PacmacBehaviour pacmac, GameObject pellet)
+        {
+            int added = pellet.GetComponent<GhostBehaviour>().GetEaten();
+            pacmac.SetScore(pacmac.GetScore() + added);
+        }
+
+        private void GetPowerOwned(PacmacBehaviour pacmac, GameObject ghost)
+        {
+            /* he ded */
+            SetType(PacmacStateType.DED);
+        }
+
+        private void SetState(GameObject pellet)
+        {
+            Pellet pelletType = pellet.GetComponent<PelletBehaviour>().GetPelletType();
+            switch(pelletType)
+            {
+                case Pellet.SUPER:
+                    SetType(PacmacStateType.SUPER);
+                    break;
+                case Pellet.POWER:
+                    SetType(PacmacStateType.POWER);
+                    break;
+                case Pellet.DOT:
+                default:
+                    break;
+            }
+        }
+
+        private void SetType(PacmacStateType type)
+        {
+            _type = type;
+            _stateStartTime = Time.time;
         }
     }
 }

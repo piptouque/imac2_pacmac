@@ -11,10 +11,14 @@ namespace pacmac
 {
     public class GameManager : MonoBehaviour
     {
-        private int _level = 0;
+        public int _level = 0;
         private float _tileSize = 1;
         private Configuration _conf;
-        private GameObject _pacman;
+        private GameObject _pacmac;
+        public GameObject _blinky;
+        public GameObject _inky;
+        public GameObject _pinky;
+        public GameObject _clyde;
         private GameObject[] _pellets;
 
         public Tilemap _wallMap;
@@ -24,7 +28,13 @@ namespace pacmac
         public CinemachineVirtualCamera _cam; 
 
         public TileGenerator _tileGen;
-        public GameObject _pacmanBase;
+        /* Characters base  */
+        public GameObject _pacmacBase;
+        public GameObject _blinkyBase;
+        public GameObject _inkyBase;
+        public GameObject _pinkyBase;
+        public GameObject _clydeBase;
+        /* Pellets base */
         public GameObject _pacdotBase;
         public GameObject _superpelletBase;
         public GameObject _powerpelletBase;
@@ -35,7 +45,11 @@ namespace pacmac
         // Start is called before the first frame update
         void Start()
         {
-            _pacmanBase.SetActive(false);
+            _pacmacBase.SetActive(false);
+            _blinkyBase.SetActive(false);
+            _inkyBase.SetActive(false);
+            _pinkyBase.SetActive(false);
+            _clydeBase.SetActive(false);
             _pacdotBase.SetActive(false);
             _superpelletBase.SetActive(false);
             _powerpelletBase.SetActive(false);
@@ -45,9 +59,10 @@ namespace pacmac
 
             /* */
             SpawnPlayer();
+            SpawnGhosts();
 
             /* */
-            ResetLevel(_level, _conf);
+            ResetLevel(0, _conf);
         }
 
         void FixedUpdate()
@@ -58,20 +73,29 @@ namespace pacmac
 
         void Update()
         {
-            if(IsLevelFinished())
+            if (IsLevelFinished())
             {
-                ResetLevel(++_level, _conf);
+                ResetLevel(_level + 1, _conf);
+            }
+            else if (IsPacmacDead())
+            {
+                ResetLevel(0, _conf);
             }
         }
 
         private bool IsLevelFinished()
         {
-            return _pellets.GetLength(0) == _pacman.GetComponent<PacmacBehaviour>().GetPelletEatenCount();
+            return _pellets.GetLength(0) == _pacmac.GetComponent<PacmacBehaviour>().GetPelletEatenCount();
+        }
+
+        private bool IsPacmacDead()
+        {
+            return _pacmac.GetComponent<PacmacBehaviour>().HeDed();
         }
 
         private void DisplayScore()
         {
-            int score = _pacman.GetComponent<PacmacBehaviour>().GetScore();
+            int score = _pacmac.GetComponent<PacmacBehaviour>().GetScore();
             _scoreCount.GetComponent<TMPro.TMP_Text>().text = System.Convert.ToString(score);
         }
         private void DisplayLevel()
@@ -81,7 +105,8 @@ namespace pacmac
 
         private void ResetLevel(int level, Configuration conf)
         {
-            conf.Reset(level);
+            _level = level;
+            conf.Reset(_level);
 
             TileType[,] grid = _tileGen.GenerateTiles(conf);
             int dimX = grid.GetLength(0);
@@ -90,7 +115,7 @@ namespace pacmac
             List<Vector2Int> freeTiles = FindFreeTiles(grid);
 
             ResetGrid(grid);
-            ResetPlayer(freeTiles, conf);
+            ResetCharacters(freeTiles, conf);
             ResetPellets(freeTiles, conf);
             CentreCamera(dim);
         }
@@ -120,7 +145,16 @@ namespace pacmac
             return freeTiles;
         }
 
-        private void ResetPlayer(List<Vector2Int> freeTiles, Configuration conf)
+        private void ResetCharacters(List<Vector2Int> freeTiles, Configuration conf)
+        {
+            ResetCharacter(_pacmac, freeTiles, conf);
+            ResetCharacter(_blinky, freeTiles, conf);
+            ResetCharacter(_inky, freeTiles, conf);
+            ResetCharacter(_pinky, freeTiles, conf);
+            ResetCharacter(_clyde, freeTiles, conf);
+        }
+
+        private void ResetCharacter(GameObject character, List<Vector2Int> freeTiles, Configuration conf)
         {
             /* find a random empty tile ? */
             /* nope, first one, whatever. */
@@ -128,16 +162,24 @@ namespace pacmac
             {
                 throw new System.ArgumentException("Nope, not happening.");
             }
-            Vector2Int pos = freeTiles[0];
+            int randomIndex = conf.RandomUniformInt(0, freeTiles.Count - 1);
+            Vector2Int pos = freeTiles[randomIndex];
             var pos3D = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0.0f);
-            _pacman.GetComponent<PacmacBehaviour>().Reset(pos3D);
+            character.GetComponent<CharacterBehaviour>().Reset(pos3D, conf);
         } 
 
         private void SpawnPlayer()
         {
-            _pacman = SpawnGameObject(_pacmanBase, Vector2Int.zero);
+            _pacmac = SpawnGameObject(_pacmacBase, Vector2Int.zero);
         }
 
+        private void SpawnGhosts()
+        {
+            _blinky = SpawnGameObject(_blinkyBase, Vector2Int.zero);
+            _inky = SpawnGameObject(_inkyBase, Vector2Int.zero);
+            _pinky = SpawnGameObject(_pinkyBase, Vector2Int.zero);
+            _clyde = SpawnGameObject(_clydeBase, Vector2Int.zero);
+        }
 
         private void ResetPellets(List<Vector2Int> freeTiles, Configuration conf)
         {
