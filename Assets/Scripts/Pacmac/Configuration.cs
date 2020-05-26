@@ -37,17 +37,17 @@ namespace pacmac
             /* todo: */
             _level = level;
             int maxDim = (int)(Math.Log(level + 1)) + 20;
-            int minDim = 20;
+            int minDim = 10;
             _distDim = new BinomialDistribution(_pDim, minDim, maxDim);
             _dim = RandomDimensions();
-            int maxPath = (_dim[0] + _dim[1]) / 4;
-            int minPath = Math.Min(_dim[0], _dim[1]) / 4 + 1;
             /* */
             _distPellets =  new CustomFiniteDistribution<Pellet>(
               _valuesPellet,
               _psPellet
               );
             /* */
+            int minPath = Math.Min(_dim[0], _dim[1]) / 4 + 1;
+            int maxPath = (_dim[0] + _dim[1]) / 4;
             _distNumberPaths = new UniformRangeIntDistribution(minPath, maxPath);
             _numberPaths = RandomNumberPaths();
             _distPathIndex = new UniformRangeIntDistribution(0, _numberPaths - 1);
@@ -57,8 +57,8 @@ namespace pacmac
             _distCoods[1] = new UniformRangeIntDistribution(0, _dim[1]-1);
 
             /* */
-            double mu = (1 - 1 / Math.Log(20 + _level));
-            double sigma = Math.Cos(_level);
+            double mu = (1 - 1 / Math.Log(20 + _level)) / 2;
+            double sigma = Math.Cos(_level) / 4;
             _distGhostSpeed = new GaussianDistribution(mu, sigma);
         }
 

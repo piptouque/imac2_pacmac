@@ -53,14 +53,26 @@ namespace pacmac
             return _pelletEatenCount;
         }
 
-        override public void Reset(Vector3 pos3D, Configuration conf)
+        public void ResetScore()
         {
-            base.Reset(pos3D, conf);
+            _score = 0;
+        }
+
+        override public void ResetPosition(Vector3 pos3D, Configuration conf)
+        {
+            base.ResetPosition(pos3D, conf);
             _pelletEatenCount = 0;
             _state.Reset();
         }
 
-        override protected void OnTriggerEnter2D(Collider2D other)
+        override public void ResetPosition()
+        {
+            base.ResetPosition();
+            _pelletEatenCount = 0;
+            _state.Reset();
+        }
+
+        protected void OnTriggerEnter2D(Collider2D other)
         {
             if (other.gameObject.CompareTag("Pellet"))
             {
@@ -197,9 +209,9 @@ namespace pacmac
             _type = PacmacStateType.NORMAL;
         }
 
-        private void EatGhost(PacmacBehaviour pacmac, GameObject pellet)
+        private void EatGhost(PacmacBehaviour pacmac, GameObject ghost)
         {
-            int added = pellet.GetComponent<GhostBehaviour>().GetEaten();
+            int added = ghost.GetComponent<GhostBehaviour>().GetEaten();
             pacmac.SetScore(pacmac.GetScore() + added);
         }
 

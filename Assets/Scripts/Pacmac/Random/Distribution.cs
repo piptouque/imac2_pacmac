@@ -121,7 +121,7 @@ namespace pacmac.random
         {
             for (int k=0; k<GetNumber()-1; ++k)
             {
-                _quantileValues[k] = (double)((Double)MathUtil.BinomialCoefficient(k, GetNumber())
+                _quantileValues[k] = (double)((Double)MathsUtil.BinomialCoefficient(k, GetNumber())
                 * Math.Pow(_p.GetValue(), k)
                 * Math.Pow(_p.GetInverseEventProb().GetValue(), GetNumber() - k));
                 if (k > 0)
@@ -160,15 +160,15 @@ namespace pacmac.random
         {
             for (int k=0; k<GetNumber()-1; ++k)
             {
-                _quantileValues[k] = (double)(MathUtil.BinomialCoefficient(
+                _quantileValues[k] = (double)(MathsUtil.BinomialCoefficient(
                     (int)(_N * _p.GetValue()),
                     k
                     )
-                    * MathUtil.BinomialCoefficient(
+                    * MathsUtil.BinomialCoefficient(
                     (int)(_N * _p.GetInverseEventProb().GetValue()),
                     GetNumber() - k
                     )
-                    / MathUtil.BinomialCoefficient(_N, GetNumber())
+                    / MathsUtil.BinomialCoefficient(_N, GetNumber())
                 );
                 if (k > 0)
                 {
@@ -217,7 +217,7 @@ namespace pacmac.random
              * see:
              * https://en.wikipedia.org/wiki/Normal_distribution#Quantile_function*
              */
-            return mu + sigma * MathUtil.ShoreStandardNormalQuantileFunction<double>(p);
+            return mu + sigma * MathsUtil.ShoreStandardNormalQuantileFunction<double>(p);
         }
     }
 

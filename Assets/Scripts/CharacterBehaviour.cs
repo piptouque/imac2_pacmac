@@ -6,7 +6,8 @@ namespace pacmac
 {
     public abstract class CharacterBehaviour : MonoBehaviour
     {
-        public float _speedBase = 0.4f;
+        [SerializeField]
+        private float _speedBase = 0.4f;
         protected Vector2 _dest;
 
         void FixedUpdate()
@@ -25,13 +26,31 @@ namespace pacmac
             GetComponent<Animator>().SetInteger("DirX", dir.x);
             GetComponent<Animator>().SetInteger("DirY", dir.y);
         }
-        abstract protected void OnTriggerEnter2D(Collider2D other);
 
         abstract protected Vector2 ChooseDest();
-        virtual public void Reset(Vector3 pos3D, Configuration conf)
+        virtual public void ResetPosition(Vector3 pos3D, Configuration conf)
         {
             transform.position = pos3D;
             _dest = (Vector2) transform.position;
+            Show();
+        }
+        virtual public void ResetPosition()
+        {
+            Hide();
+        }
+        private void Hide()
+        {
+            if (gameObject.activeSelf)
+            {
+                gameObject.SetActive(false);
+            }
+        }
+        private void Show()
+        {
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
         }
         abstract protected float GetSpeed();
 
@@ -41,10 +60,11 @@ namespace pacmac
         }
         protected bool IsDirectionValid(Vector2 dir)
         {
-            Vector2 pos = transform.position;
+            var pos = (Vector2) transform.position;
             RaycastHit2D ray = Physics2D.Linecast(pos + dir, pos);
             bool hit = (ray.collider != GetComponent<Collider2D>());
-            return hit ? ray.collider.isTrigger : true;
+            bool isValid = hit ? ray.collider.isTrigger : true;
+            return isValid;
         }
     }
 

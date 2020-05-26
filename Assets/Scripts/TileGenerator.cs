@@ -36,9 +36,13 @@ namespace pacmac
         {
             int numberPaths = conf.GetNumberPaths();
             var corners = new Vector2Int[numberPaths];
+            Vector2Int coords;
             for(int i=0; i<numberPaths; ++i)
             {
-                corners[i] = conf.RandomCoords();
+                coords = conf.RandomCoords();
+                coords.x /= 2;
+                coords.y /= 2;
+                corners[i] = coords; 
             }
             LinkCorners(grid, corners, numberPaths, conf);
             MirrorPaths(grid);
@@ -80,10 +84,10 @@ namespace pacmac
                     AddPath(grid, corners[i], corners[i + 1]);
                 }
                 /* last two on the border in order to link the four parts */
-                int borderX = (dimX + 1) / 2;
-                int borderY = (dimY + 1) / 2;
-                var wayUp = new Vector2Int(conf.RandomX(), borderY);
-                var wayRight = new Vector2Int(borderX, conf.RandomY());
+                int borderX = dimX / 2;
+                int borderY = dimY / 2;
+                var wayUp = new Vector2Int(conf.RandomX() / 2, borderY);
+                var wayRight = new Vector2Int(borderX, conf.RandomY() / 2);
                 AddPath(grid, wayRight, wayUp);
                 if (numberCorners > 0)
                 {
@@ -91,7 +95,7 @@ namespace pacmac
                     AddPath(grid, wayRight, corners[numberCorners - 1]);
                 }
             }
-            for(int i=0; i<numberCorners; ++i)
+            for (int i=0; i<numberCorners; ++i)
             {
                 Vector2Int first = corners[conf.RandomPathIndex()];
                 Vector2Int second = corners[conf.RandomPathIndex()];
@@ -101,7 +105,7 @@ namespace pacmac
 
         private static void AddPath(TileType[,] grid, Vector2Int corner1, Vector2Int corner2)
         {
-            if(corner1[0] > corner2[0])
+            if (corner1[0] > corner2[0])
             {
                 AddPath(grid, corner2, corner1);
             }
@@ -113,7 +117,7 @@ namespace pacmac
 
         private static void freePath(TileType[,] grid, Vector2Int corner1, Vector2Int corner2)
         {
-            if(corner1[0] != corner2[0]
+            if (corner1[0] != corner2[0]
               && corner1[1] != corner2[1])
             {
                   throw new System.ArgumentException("Only use with either vertical or horizontal lines.");
@@ -122,9 +126,9 @@ namespace pacmac
             int maxX = Math.Max(corner1[0], corner2[0]);
             int minY = Math.Min(corner1[1], corner2[1]);
             int maxY = Math.Max(corner1[1], corner2[1]);
-            for(int x=minX; x<=maxX; ++x)
+            for (int x=minX; x<=maxX; ++x)
             {
-                for(int y=minY; y<=maxY; ++y)
+                for (int y=minY; y<=maxY; ++y)
                 {
                     freeCell(grid, x, y);
                 }

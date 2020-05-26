@@ -6,26 +6,14 @@ namespace pacmac
 {
     public class ClydeBehaviour : GhostBehaviour
     {
-        override protected Vector2 ChooseDest()
+        public ClydeBehaviour()
         {
-            Vector2 dest = (Vector2) transform.position;
-            if (IsDirectionValid(Vector2.up))
-            {
-                
-            }
-            else if (IsDirectionValid(Vector2.down))
-            {
+            _dirPriorities[0] = Vector2.up;
+            _dirPriorities[1] = - Vector2.right;
+            _dirPriorities[2] = - Vector2.up;
+            _dirPriorities[3] = Vector2.right;
 
-            }
-            else if (IsDirectionValid(Vector2.down))
-            {
-
-            }
-            else if (IsDirectionValid(Vector2.down))
-            {
-
-            }
-            return dest;
+            _prevDir = _dirPriorities[0];
         }
     }
 

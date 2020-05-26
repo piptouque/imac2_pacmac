@@ -12,7 +12,6 @@ namespace pacmac
     public class GameManager : MonoBehaviour
     {
         public int _level = 0;
-        private float _tileSize = 1;
         private Configuration _conf;
         private GameObject _pacmac;
         public GameObject _blinky;
@@ -58,8 +57,7 @@ namespace pacmac
             _conf = new Configuration();
 
             /* */
-            SpawnPlayer();
-            SpawnGhosts();
+            SpawnCharacters();
 
             /* */
             ResetLevel(0, _conf);
@@ -79,6 +77,7 @@ namespace pacmac
             }
             else if (IsPacmacDead())
             {
+                ResetScorePlayer();
                 ResetLevel(0, _conf);
             }
         }
@@ -115,7 +114,7 @@ namespace pacmac
             List<Vector2Int> freeTiles = FindFreeTiles(grid);
 
             ResetGrid(grid);
-            ResetCharacters(freeTiles, conf);
+            ResetPositionCharacters(freeTiles, conf);
             ResetPellets(freeTiles, conf);
             CentreCamera(dim);
         }
@@ -145,16 +144,22 @@ namespace pacmac
             return freeTiles;
         }
 
-        private void ResetCharacters(List<Vector2Int> freeTiles, Configuration conf)
+        private void ResetScorePlayer()
         {
-            ResetCharacter(_pacmac, freeTiles, conf);
-            ResetCharacter(_blinky, freeTiles, conf);
-            ResetCharacter(_inky, freeTiles, conf);
-            ResetCharacter(_pinky, freeTiles, conf);
-            ResetCharacter(_clyde, freeTiles, conf);
+            _pacmac.GetComponent<PacmacBehaviour>().ResetScore();
         }
 
-        private void ResetCharacter(GameObject character, List<Vector2Int> freeTiles, Configuration conf)
+        private void ResetPositionCharacters(List<Vector2Int> freeTiles, Configuration conf)
+        {
+            ResetPositionCharacter<PacmacBehaviour>(_pacmac, freeTiles, conf);
+            ResetPositionCharacter<GhostBehaviour>(_blinky, freeTiles, conf);
+            ResetPositionCharacter<GhostBehaviour>(_inky, freeTiles, conf);
+            ResetPositionCharacter<GhostBehaviour>(_pinky, freeTiles, conf);
+            ResetPositionCharacter<GhostBehaviour>(_clyde, freeTiles, conf);
+        }
+
+        private void ResetPositionCharacter<T>(GameObject character, List<Vector2Int> freeTiles, Configuration conf)
+            where T : CharacterBehaviour 
         {
             /* find a random empty tile ? */
             /* nope, first one, whatever. */
@@ -165,20 +170,18 @@ namespace pacmac
             int randomIndex = conf.RandomUniformInt(0, freeTiles.Count - 1);
             Vector2Int pos = freeTiles[randomIndex];
             var pos3D = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0.0f);
-            character.GetComponent<CharacterBehaviour>().Reset(pos3D, conf);
+            character.GetComponent<T>().ResetPosition(pos3D, conf);
+            freeTiles.RemoveAt(randomIndex);
         } 
 
-        private void SpawnPlayer()
-        {
-            _pacmac = SpawnGameObject(_pacmacBase, Vector2Int.zero);
-        }
 
-        private void SpawnGhosts()
+        private void SpawnCharacters()
         {
-            _blinky = SpawnGameObject(_blinkyBase, Vector2Int.zero);
-            _inky = SpawnGameObject(_inkyBase, Vector2Int.zero);
-            _pinky = SpawnGameObject(_pinkyBase, Vector2Int.zero);
-            _clyde = SpawnGameObject(_clydeBase, Vector2Int.zero);
+            _pacmac = SpawnCharacter(_pacmacBase);
+            _blinky = SpawnCharacter(_blinkyBase);
+            _inky = SpawnCharacter(_inkyBase);
+            _pinky = SpawnCharacter(_pinkyBase);
+            _clyde = SpawnCharacter(_clydeBase);
         }
 
         private void ResetPellets(List<Vector2Int> freeTiles, Configuration conf)
@@ -214,17 +217,27 @@ namespace pacmac
                         pellet = _pacdotBase;
                         break;
                 }
-                _pellets[i++] = SpawnGameObject(pellet, tile);
+                _pellets[i++] = SpawnPellet(pellet, tile);
             }
         }
         
         private GameObject SpawnGameObject(GameObject obj, Vector2Int pos)
         {
-            // obj.SetActive(false);
-            Vector3 pos3D = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0);
+            Vector3 pos3D = new Vector3(pos.x + 0.5f, pos.y + 0.5f, 0.0f);
             var objCopy = (GameObject) Object.Instantiate(obj, pos3D, Quaternion.identity);
-            objCopy.SetActive(true);
             return objCopy;
+        }
+
+        private GameObject SpawnPellet(GameObject pellet, Vector2Int pos)
+        {
+            var pelletCopy = SpawnGameObject(pellet, pos);
+            pelletCopy.SetActive(true);
+            return pelletCopy;
+        }
+
+        private GameObject SpawnCharacter(GameObject character)
+        {
+            return SpawnGameObject(character, Vector2Int.zero);
         }
 
         private void ResetGrid(TileType[,] grid)

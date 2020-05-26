@@ -1,12 +1,13 @@
 
 using System;
-using System.Numerics;
 
-namespace pacmac.random
+using UnityEngine;
+
+namespace pacmac
 {
-    public class MathUtil
+    public class MathsUtil
     {
-        public static BigInteger BinomialCoefficient(BigInteger k, BigInteger n)
+        public static System.Numerics.BigInteger BinomialCoefficient(System.Numerics.BigInteger k, System.Numerics.BigInteger n)
         {
             if (k<0 || n<0)
             {
@@ -14,8 +15,8 @@ namespace pacmac.random
             }
             if (k > n) { return BinomialCoefficient(n,k); }
             if (k > n - k) { k = n - k; }
-            BigInteger result = 1;
-            for (BigInteger i=1; i <= k; ++i)
+            System.Numerics.BigInteger result = 1;
+            for (System.Numerics.BigInteger i=1; i <= k; ++i)
             {
                 result *= n - k + i;
                 result /= i;
@@ -23,7 +24,7 @@ namespace pacmac.random
             return result;
         }
 
-        public static FloatType ShoreStandardNormalQuantileFunction<FloatType>(Probability p)
+        public static FloatType ShoreStandardNormalQuantileFunction<FloatType>(random.Probability p)
             where FloatType : unmanaged
         {
             /*
@@ -42,5 +43,6 @@ namespace pacmac.random
             /* ??? */
             throw new System.NotImplementedException();
         }
+
     }
 }
