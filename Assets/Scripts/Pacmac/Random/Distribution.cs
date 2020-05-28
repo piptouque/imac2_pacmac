@@ -7,6 +7,9 @@ namespace pacmac.random
     public interface Distribution<T>
     {
         T Distribute(Probability prob);
+
+        double TheoricStandardDiviation();
+        double TheoricMean();
     }
 
     public abstract class FiniteDistribution<T> : Distribution<T>
@@ -34,6 +37,9 @@ namespace pacmac.random
             }
             throw new System.ArgumentException("Nope, something's wrong with the quantile function " + "dim: " + GetNumber());
         }
+
+        abstract public double TheoricStandardDiviation();
+        abstract public double TheoricMean();
 
 
         protected T GetValue(int index) { return _values[index]; }
@@ -63,6 +69,15 @@ namespace pacmac.random
             }
         }
 
+        override public double TheoricStandardDiviation()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        override public double TheoricMean()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public abstract class FiniteRangeIntDistribution : FiniteDistribution<int>
@@ -72,6 +87,10 @@ namespace pacmac.random
         {
 
         }
+
+        protected int GetMin() { return GetValue(0); }
+        protected int GetMax() { return GetValue(GetNumber() - 1); }
+
     }
 
     public class UniformRangeIntDistribution : FiniteRangeIntDistribution
@@ -88,6 +107,22 @@ namespace pacmac.random
                 _quantileValues[i] = (double) (i+1) / GetNumber();
             }
         }
+        override public double TheoricMean()
+        {
+            int min = GetMin();
+            int max = GetMax();
+            return (max + min) / 2.0;
+        }
+
+        override public double TheoricStandardDiviation()
+        {
+            int min = GetMin();
+            int max = GetMax();
+            int n = max - min + 1;
+            return (n * n - 1) / 12.0;
+
+        }
+
     }
 
 
@@ -105,6 +140,17 @@ namespace pacmac.random
             _quantileValues[0] = _p.GetInverseEventProb();
             _quantileValues[1] = 1.0;
         } 
+
+        override public double TheoricMean()
+        {
+            return _p.GetValue();
+        }
+
+        override public double TheoricStandardDiviation()
+        {
+            return _p.GetValue() * (1 - _p.GetValue());
+        }
+
     }
 
     public class BinomialDistribution : FiniteRangeIntDistribution
@@ -130,6 +176,22 @@ namespace pacmac.random
                 }
             }
             _quantileValues[GetNumber()-1] = 1.0;
+        }
+
+        override public double TheoricMean()
+        {
+            int min = GetMin();
+            int max = GetMax();
+            int n = max - min + 1;
+            return min + n * _p.GetValue();
+        }
+
+        override public double TheoricStandardDiviation()
+        {
+            int min = GetMin();
+            int max = GetMax();
+            int n = max - min + 1;
+            return n * _p.GetValue() * (1 - _p.GetValue());
         }
 
     }
@@ -177,6 +239,21 @@ namespace pacmac.random
             }
             _quantileValues[GetNumber()-1] = 1.0;
         }
+        override public double TheoricMean()
+        {
+            int min = GetMin();
+            int max = GetMax();
+            int n = max - min + 1;
+            return min + n * _p.GetValue();
+        }
+
+        override public double TheoricStandardDiviation()
+        {
+            int min = GetMin();
+            int max = GetMax();
+            int n = max - min + 1;
+            return n * _p.GetValue() * (1 - _p.GetValue()) * (_N - n) / (n - 1);
+        }
     }
 
     public class MultinomialDistribution : FiniteDistribution<int[]>
@@ -192,6 +269,16 @@ namespace pacmac.random
         }
 
         private static int[][] GeneratePermutations(int r, int n)
+        {
+            throw new System.NotImplementedException(); 
+        }
+
+        override public double TheoricMean()
+        {
+            throw new System.NotImplementedException(); 
+        }
+
+        override public double TheoricStandardDiviation()
         {
             throw new System.NotImplementedException(); 
         }
@@ -218,6 +305,16 @@ namespace pacmac.random
              * https://en.wikipedia.org/wiki/Normal_distribution#Quantile_function*
              */
             return mu + sigma * MathsUtil.ShoreStandardNormalQuantileFunction<double>(p);
+        }
+
+        public double TheoricMean()
+        {
+            return _mu;
+        }
+
+        public double TheoricStandardDiviation()
+        {
+            return Math.Sqrt(_sigma);
         }
     }
 

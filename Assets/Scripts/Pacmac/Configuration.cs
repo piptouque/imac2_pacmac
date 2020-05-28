@@ -26,7 +26,18 @@ namespace pacmac
         /* CONFIG VALUES */
         private double _pDim = 0.4;
         private double _pPath = 0.1;
-        private Probability[] _psPellet = new Probability[] { 0.99, 0.008, 0.002 };
+        private double _facGhostSpeed = 0.1;
+        private double[] _psPellet = new double[] { 0.99, 0.008, 0.002 };
+
+        public double GetPDim() { return _pDim; }
+        public double GetPPath() { return _pPath; }
+        public double GetFacGhostSpeed() { return _facGhostSpeed; }
+        public double[] GetPsPellet() { return _psPellet; }
+
+        public void SetPDim(double pDim) { _pDim = pDim; }
+        public void SetPPath(double pPath) { _pPath = pPath; }
+        public void SetFacGhostSpeed(double facGhostSpeed) { _facGhostSpeed = facGhostSpeed; }
+        public void SetPsPellet(double[] psPellet) { _psPellet = psPellet; }
 
         public Configuration()
         {
@@ -41,10 +52,11 @@ namespace pacmac
             int minDim = 10;
             _distDim = new BinomialDistribution(_pDim, minDim, maxDim);
             _dim = RandomDimensions();
+            Probability[] psPellet = Array.ConvertAll(_psPellet, p => (Probability)p);
             /* */
             _distPelletTypes =  new CustomFiniteDistribution<PelletType>(
               _valuesPelletTypes,
-              _psPellet
+              psPellet
               );
             /* */
             int minPath = Math.Min(_dim[0], _dim[1]) / 4 + 1;
@@ -59,9 +71,15 @@ namespace pacmac
             _distCoods[1] = new UniformRangeIntDistribution(0, _dim[1]-1);
 
             /* */
-            double mu = (1 - 1 / Math.Log(20 + _level)) / 2;
+            double mu = (1 - 1 / Math.Log(20 + _level)) / 2 * _facGhostSpeed;
             double sigma = Math.Cos(_level) / 4;
             _distGhostSpeed = new GaussianDistribution(mu, sigma);
+            
+            /*
+             * _pDim
+             * 
+             *
+             */
         }
 
         public Vector2Int GetLevelDimensions() { return _dim; }

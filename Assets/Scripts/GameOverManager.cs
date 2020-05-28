@@ -8,7 +8,7 @@ namespace pacmac
         public GameObject _gameOverUIBase;
 
         private GameObject _gameOverUI;
-        public GameObject _wrapper;
+        private GameObject _wrapper;
 
         void Awake()
         {
@@ -52,7 +52,7 @@ namespace pacmac
 
         void FixedUpdate()
         {
-            if(Input.GetKey(KeyCode.Return))
+            if(Input.GetKeyDown(KeyCode.Return))
             {
                 RestartPlay();
             }

@@ -102,10 +102,13 @@ namespace pacmac
             {
                 GoToGameOver();
             }
+            else if(Input.GetKeyDown(KeyCode.Space))
+            {
+                GoToMenu();
+            }
             else
             {
-                DisplayScore(); 
-                DisplayLevel();
+                DisplayUI();
             }
         }
         private void GoToGameOver()
@@ -113,6 +116,13 @@ namespace pacmac
             var manager = GameObject.FindWithTag("GameManager");
             Pacmac player = Unload();
             manager.GetComponent<GameManager>().GoToGameOver(player);
+        }
+
+        private void GoToMenu()
+        {
+            var manager = GameObject.FindWithTag("GameManager");
+            Pacmac player = Unload();
+            manager.GetComponent<GameManager>().GoToMenu(player);
         }
 
         private bool IsLevelFinished()
@@ -125,13 +135,10 @@ namespace pacmac
             return _pacmac.GetComponent<PacmacBehaviour>().HeDed();
         }
 
-        private void DisplayScore()
+        private void DisplayUI()
         {
             int score = _pacmac.GetComponent<PacmacBehaviour>().GetScore();
             _scoreCount.GetComponent<TMPro.TMP_Text>().text = System.Convert.ToString(score);
-        }
-        private void DisplayLevel()
-        {
             _levelCount.GetComponent<TMPro.TMP_Text>().text = System.Convert.ToString(_level);
         }
 

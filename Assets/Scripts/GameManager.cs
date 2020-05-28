@@ -8,44 +8,78 @@ namespace pacmac
     {
         public GameObject _levelManager;
         public GameObject _gameOverManager;
+        public GameObject _menuManager;
+
+        public GameObject _levelWrapper;
+        public GameObject _gameOverWrapper;
+        public GameObject _menuWrapper;
         private Configuration _conf;
         void Start()
         {
+            _conf = new Configuration();
             RestartGame();
         }
 
+
         public void RestartGame()
+        {
+            ClearActive();
+            GoToLevel(new Pacmac());
+        }
+
+        private void ClearActive()
         {
             _levelManager.SetActive(false);
             _gameOverManager.SetActive(false);
+            _menuManager.SetActive(false);
 
-            _conf = new Configuration();
-            GoToLevel(new Pacmac());
+            _levelWrapper.SetActive(false);
+            _gameOverWrapper.SetActive(false);
+            _menuWrapper.SetActive(false);
         }
         public void GoToLevel(Pacmac player)
         {
+            ClearActive();
             // SceneManager.LoadScene(1, LoadSceneMode.Additive);
             // SceneManager.UnloadSceneAsync(2);
-            var sceneLevel = SceneManager.GetSceneByBuildIndex(1);
+            var sceneLevel = SceneManager.GetSceneByName("Level");
             SceneManager.SetActiveScene(sceneLevel);
 
+            SceneManager.MoveGameObjectToScene(_levelWrapper, sceneLevel);
             _levelManager.SetActive(true);
+            _levelWrapper.SetActive(true);
             _levelManager.GetComponent<LevelManager>().StartLevel(_conf, player);
         }
-
-        private void Unload()
+        
+        public void GoToLevel(Configuration conf, Pacmac player)
         {
-            
+            _conf = conf;
+           GoToLevel(player); 
         }
+
+        public void GoToMenu(Pacmac player)
+        {
+            ClearActive();
+            var sceneMenu = SceneManager.GetSceneByName("Menu");
+            SceneManager.SetActiveScene(sceneMenu);
+
+            SceneManager.MoveGameObjectToScene(_menuWrapper, sceneMenu);
+            _menuManager.SetActive(true);
+            _menuWrapper.SetActive(true);
+            _menuManager.GetComponent<MenuManager>().PausePlay(_conf, player);
+        }
+
         public void GoToGameOver(Pacmac player)
         {
-            _levelManager.SetActive(false);
+            ClearActive();
             // SceneManager.UnloadSceneAsync(1);
             // SceneManager.LoadScene(2, LoadSceneMode.Additive);
-            var sceneGameOver = SceneManager.GetSceneByBuildIndex(2);
+            var sceneGameOver = SceneManager.GetSceneByName("GameOver");
             SceneManager.SetActiveScene(sceneGameOver);
 
+            SceneManager.MoveGameObjectToScene(_gameOverWrapper, sceneGameOver);
             _gameOverManager.SetActive(true);
+            _gameOverWrapper.SetActive(true);
             _gameOverManager.GetComponent<GameOverManager>().EndPlay(_conf, player);
         }
 
