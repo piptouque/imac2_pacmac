@@ -8,8 +8,8 @@ namespace pacmac.random
     {
         T Distribute(Probability prob);
 
-        double TheoricStandardDiviation();
-        double TheoricMean();
+        double TheoreticalStandardDiviation();
+        double TheoreticalMean();
 
     }
 
@@ -17,11 +17,12 @@ namespace pacmac.random
     {
         abstract public T Distribute(Probability prob);
 
-        abstract public double TheoricStandardDiviation();
-        abstract public double TheoricMean();
+        abstract public double TheoreticalStandardDiviation();
+        abstract public double TheoreticalMean();
         public double Diviation(T val)
         {
-            return Math.Sqrt(Math.Pow(TheoricMean(), 2) - Math.Pow(ValToDouble(val), 2));
+            double diviation = Math.Sqrt(Math.Pow(TheoreticalMean(), 2) - Math.Pow(ValToDouble(val), 2));
+            Debug.Log(TheoreticalMean);
         }
 
         public static double ValToDouble(T val)
@@ -116,12 +117,12 @@ namespace pacmac.random
             }
         }
 
-        override public double TheoricStandardDiviation()
+        override public double TheoreticalStandardDiviation()
         {
             return FiniteDistribution<T>.ComputeStandardDiviation(GetValues(), _ps);
         }
 
-        override public double TheoricMean()
+        override public double TheoreticalMean()
         {
             return FiniteDistribution<T>.ComputeMean(GetValues(), _ps);
         }
@@ -154,14 +155,14 @@ namespace pacmac.random
                 _quantileValues[i] = (double) (i+1) / GetNumber();
             }
         }
-        override public double TheoricMean()
+        override public double TheoreticalMean()
         {
             int min = GetMin();
             int max = GetMax();
             return (max + min) / 2.0;
         }
 
-        override public double TheoricStandardDiviation()
+        override public double TheoreticalStandardDiviation()
         {
             int min = GetMin();
             int max = GetMax();
@@ -188,12 +189,12 @@ namespace pacmac.random
             _quantileValues[1] = 1.0;
         } 
 
-        override public double TheoricMean()
+        override public double TheoreticalMean()
         {
             return _p.GetValue();
         }
 
-        override public double TheoricStandardDiviation()
+        override public double TheoreticalStandardDiviation()
         {
             return _p.GetValue() * (1 - _p.GetValue());
         }
@@ -225,7 +226,7 @@ namespace pacmac.random
             _quantileValues[GetNumber()-1] = 1.0;
         }
 
-        override public double TheoricMean()
+        override public double TheoreticalMean()
         {
             int min = GetMin();
             int max = GetMax();
@@ -233,7 +234,7 @@ namespace pacmac.random
             return min + n * _p.GetValue();
         }
 
-        override public double TheoricStandardDiviation()
+        override public double TheoreticalStandardDiviation()
         {
             int min = GetMin();
             int max = GetMax();
@@ -286,7 +287,7 @@ namespace pacmac.random
             }
             _quantileValues[GetNumber()-1] = 1.0;
         }
-        override public double TheoricMean()
+        override public double TheoreticalMean()
         {
             int min = GetMin();
             int max = GetMax();
@@ -294,7 +295,7 @@ namespace pacmac.random
             return min + n * _p.GetValue();
         }
 
-        override public double TheoricStandardDiviation()
+        override public double TheoreticalStandardDiviation()
         {
             int min = GetMin();
             int max = GetMax();
@@ -320,12 +321,12 @@ namespace pacmac.random
             throw new System.NotImplementedException(); 
         }
 
-        override public double TheoricMean()
+        override public double TheoreticalMean()
         {
             throw new System.NotImplementedException(); 
         }
 
-        override public double TheoricStandardDiviation()
+        override public double TheoreticalStandardDiviation()
         {
             throw new System.NotImplementedException(); 
         }
@@ -354,12 +355,12 @@ namespace pacmac.random
             return mu + sigma * MathsUtil.ShoreStandardNormalQuantileFunction<double>(p);
         }
 
-        override public double TheoricMean()
+        override public double TheoreticalMean()
         {
             return _mu;
         }
 
-        override public double TheoricStandardDiviation()
+        override public double TheoreticalStandardDiviation()
         {
             return Math.Sqrt(_sigma);
         }

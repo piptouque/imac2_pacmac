@@ -31,24 +31,24 @@ namespace pacmac.random
         {
             return _results.Aggregate(0.0, (acc, val) => acc + Distribution<T>.ValToDouble(val)) / _results.Count;
         }
-        public double TheoricStandardDiviation()
+        public double TheoreticalStandardDiviation()
         {
             /* theoritically, there's nothing to do. */
-            return _dist.TheoricStandardDiviation();
+            return _dist.TheoreticalStandardDiviation();
         }
-        public double TheoricMean()
+        public double TheoreticalMean()
         {
-            return _dist.TheoricStandardDiviation();
+            return _dist.TheoreticalStandardDiviation();
         }
 
         public double DiffToMean()
         {
-            return MemoryMean() - TheoricMean();
+            return MemoryMean() - TheoreticalMean();
         }
 
         public double DiffToStandardDiviation()
         {
-            return MemoryStandardDiviation() - TheoricStandardDiviation();
+            return MemoryStandardDiviation() - TheoreticalStandardDiviation();
         }
 
     }
@@ -76,14 +76,14 @@ namespace pacmac.random
             return _memory;
         }
 
-        override public double TheoricStandardDiviation()
+        override public double TheoreticalStandardDiviation()
         {
             /* theoritically, there's nothing to do. */
-            return _dist.TheoricStandardDiviation();
+            return _dist.TheoreticalStandardDiviation();
         }
-        override public double TheoricMean()
+        override public double TheoreticalMean()
         {
-            return _dist.TheoricMean();
+            return _dist.TheoreticalMean();
         }
 
     }
