@@ -19,15 +19,15 @@ namespace pacmac.random
 
         abstract public double TheoreticalStandardDeviation();
         abstract public double TheoreticalMean();
-        public double Deviation(T val)
+        public double Variation(T val)
         {
-            double deviation = Math.Sqrt(Math.Pow(TheoreticalMean(), 2) - Math.Pow(ValToDouble(val), 2));
-            return deviation;
+            double variation= Math.Pow(TheoreticalMean() - ValToDouble(val), 2);
+            return variation;
         }
 
         public static double ValToDouble(T val)
         {
-            /* rubbish */
+            /* rubbish (but works!!) */
             return Convert.ToDouble((object) val);
         }
 

@@ -47,6 +47,27 @@ namespace pacmac
         public Configuration()
         {
             _gen = new RandomGenerator();
+            SetDistributions();
+        }
+
+        private void SetDistributions()
+        {
+            _distDim          = new MemoryDistribution<int>();
+            _distPelletTypes  = new MemoryDistribution<PelletType>();
+            _distNumberPaths  = new MemoryDistribution<int>();
+            _distPathIndex    = new MemoryDistribution<int>();
+            _distCoods        = new MemoryDistribution<int>[2];
+            for(int i=0; i<_distCoods.GetLength(0); ++i)
+            {
+                _distCoods[i] = new MemoryDistribution<int>();
+            }
+            _distGhostSpeed  = new MemoryDistribution<double>();
+
+        }
+
+        public void Reset()
+        {
+            SetDistributions();
         }
 
         public void Reset(int level)
@@ -55,11 +76,11 @@ namespace pacmac
             _level = level;
             int maxDim = (int)(Math.Sqrt(level + 1)) + 20;
             int minDim = 10;
-            _distDim = new MemoryDistribution<int>(new BinomialDistribution(_pDim, minDim, maxDim));
+            _distDim.ResetDistribution(new BinomialDistribution(_pDim, minDim, maxDim));
             _dim = RandomDimensions();
             Probability[] psPellet = Array.ConvertAll(_psPellet, p => (Probability)p);
             /* */
-            _distPelletTypes =  new MemoryDistribution<PelletType>(new CustomFiniteDistribution<PelletType>(
+            _distPelletTypes.ResetDistribution(new CustomFiniteDistribution<PelletType>(
               _valuesPelletTypes,
               psPellet
               ));
@@ -67,26 +88,20 @@ namespace pacmac
             int minPath = Math.Min(_dim[0], _dim[1]) / 4 + 1;
             int maxPath = (_dim[0] + _dim[1]) / 4;
             int numberTiles = _dim.x * _dim.y;
-            _distNumberPaths = new MemoryDistribution<int>(new HypergeometricDistribution(_pPath, minPath, maxPath, numberTiles));
+            _distNumberPaths.ResetDistribution(new HypergeometricDistribution(_pPath, minPath, maxPath, numberTiles));
             _numberPaths = RandomNumberPaths();
-            _distPathIndex = new MemoryDistribution<int>(new UniformRangeIntDistribution(0, _numberPaths - 1));
+            _distPathIndex.ResetDistribution(new UniformRangeIntDistribution(0, _numberPaths - 1));
             /* */
-            _distCoods = new MemoryDistribution<int>[2];
             for(int i=0; i<_distCoods.GetLength(0); ++i)
             {
-                _distCoods[i] = new MemoryDistribution<int>(new UniformRangeIntDistribution(0, _dim[0] - 1));
+                _distCoods[i].ResetDistribution(new UniformRangeIntDistribution(0, _dim[0] - 1));
             }
 
             /* */
             double mu = _facGhostSpeed;
             double sigma = Math.Cos(mu) / 4;
-            _distGhostSpeed = new MemoryDistribution<double>(new GaussianDistribution(mu, sigma));
+            _distGhostSpeed.ResetDistribution(new GaussianDistribution(mu, sigma));
             
-            /*
-             * _pDim
-             * 
-             *
-             */
         }
 
         public Vector2Int GetLevelDimensions() { return _dim; }

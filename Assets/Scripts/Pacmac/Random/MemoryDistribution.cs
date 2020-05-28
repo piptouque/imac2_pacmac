@@ -1,4 +1,5 @@
 
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -13,8 +14,13 @@ namespace pacmac.random
 
         public RandomMemoryResult(Distribution<T> dist)
         {
-            _dist = dist;
+            ResetDistribution(dist);
             _results = new List<T>();
+        }
+
+        public void ResetDistribution(Distribution<T> dist)
+        {
+            _dist = dist;
         }
 
         public void AddResult(T val)
@@ -28,9 +34,8 @@ namespace pacmac.random
             {
                 return double.NaN;
             }
-            double deviation = _results.Aggregate(0.0, (acc, val) => acc + _dist.Deviation(val));
-            // UnityEngine.Debug.Log(deviation);
-            return deviation;
+            double variation = _results.Aggregate(0.0, (acc, val) => acc + _dist.Variation(val));
+            return Math.Sqrt(variation);
         }
 
         public double MemoryMean()
@@ -72,6 +77,18 @@ namespace pacmac.random
         {
             _dist = dist;
             _memory = new RandomMemoryResult<T>(_dist);
+        }
+
+        public MemoryDistribution()
+        : this(null)
+        {
+
+        }
+
+        public void ResetDistribution(Distribution<T> dist)
+        {
+            _dist = dist;
+            _memory.ResetDistribution(dist);
         }
 
         override public T Distribute(Probability prob)

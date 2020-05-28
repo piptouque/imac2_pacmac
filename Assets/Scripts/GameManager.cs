@@ -24,6 +24,7 @@ namespace pacmac
         public void RestartGame()
         {
             ClearActive();
+            _conf.Reset();
             GoToLevel(new Pacmac());
         }
 
