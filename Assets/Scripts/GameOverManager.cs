@@ -12,20 +12,7 @@ namespace pacmac
         public GameObject[] _valuesPath;
         public GameObject[] _valuesGhostSpeed;
         public GameObject[] _valuesPelletType;
-        void Awake()
-        {
-            DeactivateBase();
-        }
         
-        private void DeactivateBase()
-        {
-        }
-
-        private void SpawnTexts()
-        {
-
-        }
-
         private void Load(Configuration conf)
         {
             _conf = conf;

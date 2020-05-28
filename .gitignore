@@ -3,6 +3,8 @@
 Library/
 Logs/
 Temp/
+Bin/
 *.csproj
+**/.csproj
 *.meta
 **/.meta

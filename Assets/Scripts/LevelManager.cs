@@ -13,6 +13,8 @@ namespace pacmac
     {
         private int _level = 0;
         private Configuration _conf;
+        private TileGenerator _tileGen;
+        private GameObject _wrapper;
         private GameObject _pacmac;
         private GameObject _blinky;
         private GameObject _inky;
@@ -26,8 +28,6 @@ namespace pacmac
         public RuleTile _rimTiles;
         public CinemachineVirtualCamera _cam; 
 
-        public TileGenerator _tileGen;
-        public GameObject _wrapper;
         /* Characters base  */
         public GameObject _pacmacBase;
         public GameObject _blinkyBase;

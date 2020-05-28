@@ -4138,7 +4138,6 @@ MonoBehaviour:
   _wallTiles: {fileID: 11400000, guid: cd31dcf0f0cd38a4083915e043c139cc, type: 2}
   _rimTiles: {fileID: 11400000, guid: b8994589a74dbba49aef0a118e42d60d, type: 2}
   _cam: {fileID: 42510468}
-  _wrapper: {fileID: 0}
   _pacmacBase: {fileID: 1115044427}
   _blinkyBase: {fileID: 832551962}
   _inkyBase: {fileID: 1015925459}
@@ -6809,7 +6808,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1536676828
 Transform:
   m_ObjectHideFlags: 0
