@@ -14,10 +14,33 @@ namespace pacmac
         public GameObject _gameOverWrapper;
         public GameObject _menuWrapper;
         private Configuration _conf;
+
+
+        private bool _shouldRestart;
         void Start()
         {
+            ClearActive();
             _conf = new Configuration();
-            RestartGame();
+
+            SceneManager.LoadSceneAsync("Level", LoadSceneMode.Additive);
+            SceneManager.LoadSceneAsync("Menu", LoadSceneMode.Additive);
+            SceneManager.LoadSceneAsync("GameOver", LoadSceneMode.Additive);
+
+            _shouldRestart = true;
+        }
+
+        private void Update()
+        {
+            /*
+             * fixit: Scenes are not loaded when building standalone
+             * 
+             */ 
+            var sceneLevel = SceneManager.GetSceneByName("Level");
+            if(_shouldRestart && sceneLevel.isLoaded)
+            {
+                _shouldRestart = false;
+                RestartGame();
+            }
         }
 
 

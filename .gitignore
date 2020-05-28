@@ -1,8 +1,11 @@
-
+# Visual Code
+.vs
 # Unity rubbish
-Library/
-Logs/
-Temp/
-Bin/
+Library
+Logs
+Temp
+Bin
+*.csproj
 **/*.csproj
+*.meta
 **/*.meta
