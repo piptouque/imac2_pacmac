@@ -12,19 +12,20 @@ namespace pacmac
         private RandomGenerator _gen; 
         /* distributions for .... */
         private FiniteDistribution<int> _distDim; // Dimension of the grid
-        private FiniteDistribution<Pellet> _distPellets;
+        private FiniteDistribution<PelletType> _distPelletTypes;
         /* distributions for TileGenerator */
         private FiniteDistribution<int> _distNumberPaths, _distPathIndex;
         private FiniteDistribution<int>[] _distCoods;
 
         private Distribution<double> _distGhostSpeed;
         /* STORED VALUES */
-        private Pellet[] _valuesPellet = PelletExtension.PelletsList();
+        private PelletType[] _valuesPelletTypes = PelletExtension.PelletList();
         private Vector2Int _dim;
         private int _level;
         private int _numberPaths;
         /* CONFIG VALUES */
         private double _pDim = 0.4;
+        private double _pPath = 0.1;
         private Probability[] _psPellet = new Probability[] { 0.99, 0.008, 0.002 };
 
         public Configuration()
@@ -41,14 +42,15 @@ namespace pacmac
             _distDim = new BinomialDistribution(_pDim, minDim, maxDim);
             _dim = RandomDimensions();
             /* */
-            _distPellets =  new CustomFiniteDistribution<Pellet>(
-              _valuesPellet,
+            _distPelletTypes =  new CustomFiniteDistribution<PelletType>(
+              _valuesPelletTypes,
               _psPellet
               );
             /* */
             int minPath = Math.Min(_dim[0], _dim[1]) / 4 + 1;
             int maxPath = (_dim[0] + _dim[1]) / 4;
-            _distNumberPaths = new UniformRangeIntDistribution(minPath, maxPath);
+            int numberTiles = _dim.x * _dim.y;
+            _distNumberPaths = new HypergeometricDistribution(_pPath, minPath, maxPath, numberTiles);
             _numberPaths = RandomNumberPaths();
             _distPathIndex = new UniformRangeIntDistribution(0, _numberPaths - 1);
             /* */
@@ -97,9 +99,9 @@ namespace pacmac
             return _gen.Random<int>(_distPathIndex); 
         }
 
-        public Pellet RandomPellet()
+        public PelletType RandomPelletType()
         {
-            return _gen.Random<Pellet>(_distPellets);
+            return _gen.Random<PelletType>(_distPelletTypes);
         }
 
         public float RandomGhostSpeed()
