@@ -38,7 +38,7 @@ namespace pacmac
         private static void SetUIResult<T>(GameObject[] values, RandomMemoryResult<T> res)
         {
             values[0].GetComponent<TMPro.TMP_Text>().text = res.DiffToMean().ToString("0.####");
-            values[1].GetComponent<TMPro.TMP_Text>().text = res.DiffToStandardDiviation().ToString("0.####");
+            values[1].GetComponent<TMPro.TMP_Text>().text = res.DiffToStandardDeviation().ToString("0.####");
         }
         private void SetUI()
         {

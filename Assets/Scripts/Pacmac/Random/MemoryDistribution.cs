@@ -22,23 +22,34 @@ namespace pacmac.random
             _results.Add(val);
         }
 
-        public double MemoryStandardDiviation()
+        public double MemoryStandardDeviation()
         {
-            return _results.Aggregate(0.0, (acc, val) => acc + _dist.Diviation(val));
+            if(!_results.Any())
+            {
+                return double.NaN;
+            }
+            double deviation = _results.Aggregate(0.0, (acc, val) => acc + _dist.Deviation(val));
+            // UnityEngine.Debug.Log(deviation);
+            return deviation;
         }
 
         public double MemoryMean()
         {
-            return _results.Aggregate(0.0, (acc, val) => acc + Distribution<T>.ValToDouble(val)) / _results.Count;
+            if(!_results.Any())
+            {
+                return double.NaN;
+            }
+            double mean = _results.Aggregate(0.0, (acc, val) => acc + Distribution<T>.ValToDouble(val)) / _results.Count;
+            return mean;
         }
-        public double TheoreticalStandardDiviation()
+        public double TheoreticalStandardDeviation()
         {
             /* theoritically, there's nothing to do. */
-            return _dist.TheoreticalStandardDiviation();
+            return _dist.TheoreticalStandardDeviation();
         }
         public double TheoreticalMean()
         {
-            return _dist.TheoreticalStandardDiviation();
+            return _dist.TheoreticalStandardDeviation();
         }
 
         public double DiffToMean()
@@ -46,9 +57,9 @@ namespace pacmac.random
             return MemoryMean() - TheoreticalMean();
         }
 
-        public double DiffToStandardDiviation()
+        public double DiffToStandardDeviation()
         {
-            return MemoryStandardDiviation() - TheoreticalStandardDiviation();
+            return MemoryStandardDeviation() - TheoreticalStandardDeviation();
         }
 
     }
@@ -76,10 +87,9 @@ namespace pacmac.random
             return _memory;
         }
 
-        override public double TheoreticalStandardDiviation()
+        override public double TheoreticalStandardDeviation()
         {
-            /* theoritically, there's nothing to do. */
-            return _dist.TheoreticalStandardDiviation();
+            return _dist.TheoreticalStandardDeviation();
         }
         override public double TheoreticalMean()
         {

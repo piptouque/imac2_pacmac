@@ -8,7 +8,7 @@ namespace pacmac.random
     {
         T Distribute(Probability prob);
 
-        double TheoreticalStandardDiviation();
+        double TheoreticalStandardDeviation();
         double TheoreticalMean();
 
     }
@@ -17,12 +17,12 @@ namespace pacmac.random
     {
         abstract public T Distribute(Probability prob);
 
-        abstract public double TheoreticalStandardDiviation();
+        abstract public double TheoreticalStandardDeviation();
         abstract public double TheoreticalMean();
-        public double Diviation(T val)
+        public double Deviation(T val)
         {
-            double diviation = Math.Sqrt(Math.Pow(TheoreticalMean(), 2) - Math.Pow(ValToDouble(val), 2));
-            Debug.Log(TheoreticalMean);
+            double deviation = Math.Sqrt(Math.Pow(TheoreticalMean(), 2) - Math.Pow(ValToDouble(val), 2));
+            return deviation;
         }
 
         public static double ValToDouble(T val)
@@ -64,7 +64,7 @@ namespace pacmac.random
         protected T[] GetValues() { return _values; }
         protected Probability GetQuantileValue(int index) { return _quantileValues[index]; }
         protected int GetNumber() { return _values.GetLength(0); }
-        protected static double ComputeStandardDiviation(T[] values, Probability[] ps)
+        protected static double ComputeStandardDeviation(T[] values, Probability[] ps)
         {
             /// throw new System.NotImplementedException();
             double[] valuesSquared = values.Select(val => Math.Pow(ValToDouble(val), 2)).ToArray();
@@ -117,9 +117,9 @@ namespace pacmac.random
             }
         }
 
-        override public double TheoreticalStandardDiviation()
+        override public double TheoreticalStandardDeviation()
         {
-            return FiniteDistribution<T>.ComputeStandardDiviation(GetValues(), _ps);
+            return FiniteDistribution<T>.ComputeStandardDeviation(GetValues(), _ps);
         }
 
         override public double TheoreticalMean()
@@ -162,7 +162,7 @@ namespace pacmac.random
             return (max + min) / 2.0;
         }
 
-        override public double TheoreticalStandardDiviation()
+        override public double TheoreticalStandardDeviation()
         {
             int min = GetMin();
             int max = GetMax();
@@ -194,7 +194,7 @@ namespace pacmac.random
             return _p.GetValue();
         }
 
-        override public double TheoreticalStandardDiviation()
+        override public double TheoreticalStandardDeviation()
         {
             return _p.GetValue() * (1 - _p.GetValue());
         }
@@ -234,7 +234,7 @@ namespace pacmac.random
             return min + n * _p.GetValue();
         }
 
-        override public double TheoreticalStandardDiviation()
+        override public double TheoreticalStandardDeviation()
         {
             int min = GetMin();
             int max = GetMax();
@@ -295,7 +295,7 @@ namespace pacmac.random
             return min + n * _p.GetValue();
         }
 
-        override public double TheoreticalStandardDiviation()
+        override public double TheoreticalStandardDeviation()
         {
             int min = GetMin();
             int max = GetMax();
@@ -326,7 +326,7 @@ namespace pacmac.random
             throw new System.NotImplementedException(); 
         }
 
-        override public double TheoreticalStandardDiviation()
+        override public double TheoreticalStandardDeviation()
         {
             throw new System.NotImplementedException(); 
         }
@@ -360,7 +360,7 @@ namespace pacmac.random
             return _mu;
         }
 
-        override public double TheoreticalStandardDiviation()
+        override public double TheoreticalStandardDeviation()
         {
             return Math.Sqrt(_sigma);
         }

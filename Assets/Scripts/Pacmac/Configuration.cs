@@ -78,8 +78,8 @@ namespace pacmac
             }
 
             /* */
-            double mu = (1 - 1 / Math.Log(20 + _level)) / 2 * _facGhostSpeed;
-            double sigma = Math.Cos(_level) / 4;
+            double mu = _facGhostSpeed;
+            double sigma = Math.Cos(mu) / 4;
             _distGhostSpeed = new MemoryDistribution<double>(new GaussianDistribution(mu, sigma));
             
             /*
