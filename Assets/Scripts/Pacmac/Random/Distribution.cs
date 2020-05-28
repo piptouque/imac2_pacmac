@@ -4,12 +4,32 @@ using System.Linq;
 
 namespace pacmac.random
 {
-    public interface Distribution<T>
+    public interface IDistributor<T>
     {
         T Distribute(Probability prob);
 
         double TheoricStandardDiviation();
         double TheoricMean();
+
+    }
+
+    public abstract class Distribution<T> : IDistributor<T>
+    {
+        abstract public T Distribute(Probability prob);
+
+        abstract public double TheoricStandardDiviation();
+        abstract public double TheoricMean();
+        public double Diviation(T val)
+        {
+            return Math.Sqrt(Math.Pow(TheoricMean(), 2) - Math.Pow(ValToDouble(val), 2));
+        }
+
+        public static double ValToDouble(T val)
+        {
+            /* rubbish */
+            return Convert.ToDouble((object) val);
+        }
+
     }
 
     public abstract class FiniteDistribution<T> : Distribution<T>
@@ -21,7 +41,7 @@ namespace pacmac.random
             _values = (T[]) values.Clone();
             _quantileValues = new Probability[GetNumber()];
         }
-        public T Distribute(Probability prob)
+        override public T Distribute(Probability prob)
         {
             /*
              * see inverse distribution function
@@ -38,22 +58,49 @@ namespace pacmac.random
             throw new System.ArgumentException("Nope, something's wrong with the quantile function " + "dim: " + GetNumber());
         }
 
-        abstract public double TheoricStandardDiviation();
-        abstract public double TheoricMean();
-
 
         protected T GetValue(int index) { return _values[index]; }
+        protected T[] GetValues() { return _values; }
         protected Probability GetQuantileValue(int index) { return _quantileValues[index]; }
         protected int GetNumber() { return _values.GetLength(0); }
+        protected static double ComputeStandardDiviation(T[] values, Probability[] ps)
+        {
+            /// throw new System.NotImplementedException();
+            double[] valuesSquared = values.Select(val => Math.Pow(ValToDouble(val), 2)).ToArray();
+            return ComputeMean(valuesSquared, ps) - ComputeMean(valuesSquared, ps);
+        }
+
+        protected static double ComputeMean(T[] values, Probability[] ps)
+        {
+            double[] valuesAsDouble = values.Select(val => ValToDouble(val)).ToArray();
+            return ComputeMean(valuesAsDouble, ps);
+        }
+
+        private static double ComputeMean(double[] values, Probability[] ps)
+        {
+            if(values.GetLength(0) != ps.GetLength(0))
+            {
+                throw new System.ArgumentException("Nope.");
+            }
+            double mean = 0.0;
+            for(int i=0; i<values.GetLength(0); ++i)
+            {
+                mean += values[i] * ps[i].GetValue();
+            }
+            mean /= values.GetLength(0);
+            return mean;
+        }
 
     }
 
 
     public class CustomFiniteDistribution<T> : FiniteDistribution<T>
     {
+        private Probability[] _ps;
         public CustomFiniteDistribution(T[] values, Probability[] ps)
         : base(values)
         {
+            _ps = (Probability[]) ps.Clone();
             PopulateQuantileValues(ps);
         }
 
@@ -71,12 +118,12 @@ namespace pacmac.random
 
         override public double TheoricStandardDiviation()
         {
-            throw new System.NotImplementedException();
+            return FiniteDistribution<T>.ComputeStandardDiviation(GetValues(), _ps);
         }
 
         override public double TheoricMean()
         {
-            throw new System.NotImplementedException();
+            return FiniteDistribution<T>.ComputeMean(GetValues(), _ps);
         }
     }
 
@@ -293,7 +340,7 @@ namespace pacmac.random
             _mu = mu;
             _sigma = sigma;
         }
-        public double Distribute(Probability p)
+        override public double Distribute(Probability p)
         {
             return QuantileFunction(_mu, _sigma, p);
         }
@@ -307,12 +354,12 @@ namespace pacmac.random
             return mu + sigma * MathsUtil.ShoreStandardNormalQuantileFunction<double>(p);
         }
 
-        public double TheoricMean()
+        override public double TheoricMean()
         {
             return _mu;
         }
 
-        public double TheoricStandardDiviation()
+        override public double TheoricStandardDiviation()
         {
             return Math.Sqrt(_sigma);
         }

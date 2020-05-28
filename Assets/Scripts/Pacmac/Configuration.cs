@@ -11,13 +11,13 @@ namespace pacmac
         /* Random Number Generator */
         private RandomGenerator _gen; 
         /* distributions for .... */
-        private FiniteDistribution<int> _distDim; // Dimension of the grid
-        private FiniteDistribution<PelletType> _distPelletTypes;
+        private MemoryDistribution<int> _distDim; // Dimension of the grid
+        private MemoryDistribution<PelletType> _distPelletTypes;
         /* distributions for TileGenerator */
-        private FiniteDistribution<int> _distNumberPaths, _distPathIndex;
-        private FiniteDistribution<int>[] _distCoods;
+        private MemoryDistribution<int> _distNumberPaths, _distPathIndex;
+        private MemoryDistribution<int>[] _distCoods;
 
-        private Distribution<double> _distGhostSpeed;
+        private MemoryDistribution<double> _distGhostSpeed;
         /* STORED VALUES */
         private PelletType[] _valuesPelletTypes = PelletExtension.PelletList();
         private Vector2Int _dim;
@@ -39,6 +39,11 @@ namespace pacmac
         public void SetFacGhostSpeed(double facGhostSpeed) { _facGhostSpeed = facGhostSpeed; }
         public void SetPsPellet(double[] psPellet) { _psPellet = psPellet; }
 
+        public RandomMemoryResult<int> GetDimResults() { return _distDim.GetMemory(); }
+        public RandomMemoryResult<PelletType> GetPelletTypesResults() { return _distPelletTypes.GetMemory(); }
+        public RandomMemoryResult<int> GetNumberPathsResults() { return _distNumberPaths.GetMemory(); }
+        public RandomMemoryResult<double> GetGhostSpeedResults() { return _distGhostSpeed.GetMemory(); }
+
         public Configuration()
         {
             _gen = new RandomGenerator();
@@ -48,32 +53,34 @@ namespace pacmac
         {
             /* todo: */
             _level = level;
-            int maxDim = (int)(Math.Log(level + 1)) + 20;
+            int maxDim = (int)(Math.Sqrt(level + 1)) + 20;
             int minDim = 10;
-            _distDim = new BinomialDistribution(_pDim, minDim, maxDim);
+            _distDim = new MemoryDistribution<int>(new BinomialDistribution(_pDim, minDim, maxDim));
             _dim = RandomDimensions();
             Probability[] psPellet = Array.ConvertAll(_psPellet, p => (Probability)p);
             /* */
-            _distPelletTypes =  new CustomFiniteDistribution<PelletType>(
+            _distPelletTypes =  new MemoryDistribution<PelletType>(new CustomFiniteDistribution<PelletType>(
               _valuesPelletTypes,
               psPellet
-              );
+              ));
             /* */
             int minPath = Math.Min(_dim[0], _dim[1]) / 4 + 1;
             int maxPath = (_dim[0] + _dim[1]) / 4;
             int numberTiles = _dim.x * _dim.y;
-            _distNumberPaths = new HypergeometricDistribution(_pPath, minPath, maxPath, numberTiles);
+            _distNumberPaths = new MemoryDistribution<int>(new HypergeometricDistribution(_pPath, minPath, maxPath, numberTiles));
             _numberPaths = RandomNumberPaths();
-            _distPathIndex = new UniformRangeIntDistribution(0, _numberPaths - 1);
+            _distPathIndex = new MemoryDistribution<int>(new UniformRangeIntDistribution(0, _numberPaths - 1));
             /* */
-            _distCoods = new FiniteDistribution<int>[2];
-            _distCoods[0] = new UniformRangeIntDistribution(0, _dim[0]-1);
-            _distCoods[1] = new UniformRangeIntDistribution(0, _dim[1]-1);
+            _distCoods = new MemoryDistribution<int>[2];
+            for(int i=0; i<_distCoods.GetLength(0); ++i)
+            {
+                _distCoods[i] = new MemoryDistribution<int>(new UniformRangeIntDistribution(0, _dim[0] - 1));
+            }
 
             /* */
             double mu = (1 - 1 / Math.Log(20 + _level)) / 2 * _facGhostSpeed;
             double sigma = Math.Cos(_level) / 4;
-            _distGhostSpeed = new GaussianDistribution(mu, sigma);
+            _distGhostSpeed = new MemoryDistribution<double>(new GaussianDistribution(mu, sigma));
             
             /*
              * _pDim
