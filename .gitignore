@@ -5,7 +5,7 @@ Library
 Logs
 Temp
 Bin
-*.csproj
-**/*.csproj
-*.meta
-**/*.meta
+# *.csproj
+# **/*.csproj
+# *.meta
+# **/*.meta
